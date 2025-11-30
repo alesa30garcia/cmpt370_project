@@ -1,4 +1,3 @@
-
 class Game {
   constructor(state) {
     this.state = state;
@@ -9,6 +8,36 @@ class Game {
 //   // example - we can add our own custom method to our game and call it using 'this.customMethod()'
    customMethod() {
      console.log("Custom method!");
+}
+
+  moveRobber() {
+    this.mesh = getObject(this.state, "robber");
+    console.log(this.mesh.name);
+    console.log(this.mesh.rotation);
+
+    document.addEventListener("keydown", (event) => {
+        event.preventDefault()
+
+        switch(event.code)
+        {
+          case "KeyA":
+            this.mesh.translate(vec3.fromValues(-0.1, 0,0));
+            break;
+          
+          case "KeyD":
+            this.mesh.translate(vec3.fromValues(0.1, 0,0));
+            break;
+
+          case "KeyW":
+             this.mesh.translate(vec3.fromValues(0, 0, 0.1));
+            break;
+
+          case "KeyS":
+             this.mesh.translate(vec3.fromValues(0, 0, -0.1));
+            break;
+        }
+    });
+
 }
 
 //   // example - create a collider on our object with various fields we might need (you will likely need to add/remove/edit how this works)
@@ -48,6 +77,29 @@ async onStart() {
     document.addEventListener("contextmenu", (e) => {
       e.preventDefault();
     }, false);
+
+    document.addEventListener("keydown", (event) => {
+        event.preventDefault()
+    this.mesh = getObject(this.state, "robber");
+        switch(event.code)
+        {
+          case "KeyA":
+            this.mesh.translate(vec3.fromValues(-0.1, 0,0));
+            break;
+          
+          case "KeyD":
+            this.mesh.translate(vec3.fromValues(0.1, 0,0));
+            break;
+
+          case "KeyS":
+             this.mesh.translate(vec3.fromValues(0, 0, 0.1));
+            break;
+
+          case "KeyW":
+             this.mesh.translate(vec3.fromValues(0, 0, -0.1));
+            break;
+        }
+    });
 
 //     // example - set an object in onStart before starting our render loop!
 //     this.cube = getObject(this.state, "cube1");
@@ -143,5 +195,17 @@ async onStart() {
 
 //     // example - call our collision check method on our cube
 //     // this.checkCollision(this.cube);
-//   }
-}}
+}
+onUpdate(deltaTime)
+{
+
+  //this.moveRobber();
+   //this.mesh = getObject(this.state, "robber");
+  // this.mesh.translate(vec3.fromValues(0.1, 0, 0));
+
+
+  //moveRobber();
+
+}
+
+}
