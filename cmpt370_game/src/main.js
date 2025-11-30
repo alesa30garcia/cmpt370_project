@@ -161,7 +161,7 @@ function startRendering(gl, state) {
 
     state.deltaTime = deltaTime;
     drawScene(gl, deltaTime, state);
-    //game.onUpdate(deltaTime); //constantly call our game loop
+    game.onUpdate(deltaTime); //constantly call our game loop
 
     // Request another frame when this one is done
     requestAnimationFrame(render);
@@ -315,4 +315,5 @@ function drawScene(gl, deltaTime, state) {
     }
   });
 }
+
 
