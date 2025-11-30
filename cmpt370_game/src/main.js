@@ -12,6 +12,7 @@ window.onload = async () => {
     console.error(err);
     alert(err);
   }
+  return true;
 }
 
 /**
@@ -314,3 +315,4 @@ function drawScene(gl, deltaTime, state) {
     }
   });
 }
+
