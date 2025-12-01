@@ -69,7 +69,7 @@ class CustomObject {
       attribLocations: {
         vertexPosition: this.gl.getAttribLocation(shaderProgram, 'aPosition'),
         vertexNormal: this.gl.getAttribLocation(shaderProgram, 'aNormal'),
-        // vertexUV: this.gl.getAttribLocation(shaderProgram, 'aUV'),
+        vertexUV: this.gl.getAttribLocation(shaderProgram, 'aUV'),
         // vertexBitangent: this.gl.getAttribLocation(shaderProgram, 'aVertBitang')
       },
       uniformLocations: {
@@ -86,8 +86,8 @@ class CustomObject {
         // lightPositions: this.gl.getUniformLocation(shaderProgram, 'uLightPositions'),
         // lightColours: this.gl.getUniformLocation(shaderProgram, 'uLightColours'),
         // lightStrengths: this.gl.getUniformLocation(shaderProgram, 'uLightStrengths'),
-        // samplerExists: this.gl.getUniformLocation(shaderProgram, "samplerExists"),
-        // sampler: this.gl.getUniformLocation(shaderProgram, 'uTexture'),
+        samplerExists: this.gl.getUniformLocation(shaderProgram, "samplerExists"),
+        sampler: this.gl.getUniformLocation(shaderProgram, 'uTexture'),
         // normalSamplerExists: this.gl.getUniformLocation(shaderProgram, 'uTextureNormExists'),
         // normalSampler: this.gl.getUniformLocation(shaderProgram, 'uTextureNorm')
       },
@@ -102,7 +102,7 @@ class CustomObject {
     const positions = new Float32Array(this.model.vertices.flat());
     const normals = new Float32Array(this.model.normals.flat());
     const indices = this.model.triangles ? new Uint16Array(this.model.triangles) : null;
-    // const textureCoords = new Float32Array(this.model.uvs);
+    const textureCoords = new Float32Array(this.model.uvs);
     // const bitangents = new Float32Array(this.model.bitangents);
 
     var vertexArrayObject = this.gl.createVertexArray();
@@ -114,7 +114,7 @@ class CustomObject {
       attributes: {
         position: initPositionAttribute(this.gl, this.programInfo, positions),
         normal: initNormalAttribute(this.gl, this.programInfo, normals),
-        // uv: initTextureCoords(this.gl, this.programInfo, textureCoords),
+        uv: initTextureCoords(this.gl, this.programInfo, textureCoords),
         // bitangents: initBitangentBuffer(this.gl, this.programInfo, bitangents)
       },
       indicies: indices ? initIndexBuffer(this.gl, indices) : null,
