@@ -10,56 +10,41 @@ class Game {
      console.log("Custom method!");
 }
 
-  moveRobber() {
-    this.mesh = getObject(this.state, "robber");
-    console.log(this.mesh.name);
-    console.log(this.mesh.rotation);
 
-    document.addEventListener("keydown", (event) => {
-        event.preventDefault()
-
-        switch(event.code)
-        {
-          case "KeyA":
-            this.mesh.translate(vec3.fromValues(-0.1, 0,0));
-            break;
-          
-          case "KeyD":
-            this.mesh.translate(vec3.fromValues(0.1, 0,0));
-            break;
-
-          case "KeyW":
-             this.mesh.translate(vec3.fromValues(0, 0, 0.1));
-            break;
-
-          case "KeyS":
-             this.mesh.translate(vec3.fromValues(0, 0, -0.1));
-            break;
-        }
-    });
-
-}
-
-//   // example - create a collider on our object with various fields we might need (you will likely need to add/remove/edit how this works)
-//   createSphereCollider(object, radius, onCollide = null) {
-//     object.collider = {
-//       type: "SPHERE",
-//       radius: radius,
-//       onCollide: onCollide ? onCollide : (otherObject) => {
-//         console.log(`Collided with ${otherObject.name}`);
-//       }
-//     };
-//     this.collidableObjects.push(object);
-//   }
+   // example - create a collider on our object with various fields we might need (you will likely need to add/remove/edit how this works)
+  createSphereCollider(object, radius, onCollide = null) {
+    object.collider = {
+      type: "SPHERE",
+      radius: radius,
+      onCollide: onCollide ? onCollide : (otherObject) => {
+        console.log(`Collided with ${otherObject.name}`
+        
+        );
+      }
+    };
+    this.collidableObjects.push(object);
+  }
 
 //   // example - function to check if an object is colliding with collidable objects
-//   checkCollision(object) {
+   checkCollision(object) {
 //     // loop over all the other collidable objects 
-//     this.collidableObjects.forEach(otherObject => {
-//       // probably don't need to collide with ourselves
-//       if (object.name === otherObject.name) {
-//         return;
-//       }
+     this.collidableObjects.forEach(otherObject => {
+
+        let position1 = vec3.create();
+        vec3.transformMat4(position1, object.model.position, object.modelMatrix);
+
+        let position2 = vec3.create();
+        vec3.transformMat4(position2, otherObject.model.position, otherObject.modelMatrix);
+
+        let distance = vec3.distance(position1, position2);
+
+        if (otherObject.name !== object.name && (distance < (object.collider.radius + otherObject.collider.radius)))
+          {
+          object.collider.onCollide(otherObject);
+        
+          
+          }})}
+
 //       // do a check to see if we have collided, if we have we can call object.onCollide(otherObject) which will
 //       // call the onCollide we define for that specific object. This way we can handle collisions identically for all
 //       // objects that can collide but they can do different things (ie. player colliding vs projectile colliding)
@@ -78,13 +63,23 @@ async onStart() {
       e.preventDefault();
     }, false);
 
+
+    this.mesh = getObject(this.state, "robber");
+    this.dog = getObject (this.state, "dog");
+
+    this.createSphereCollider(this.mesh, 0.2);
+    this.createSphereCollider(this.dog, 0.2);
+    
+    console.log(this.collidableObjects);
+
     document.addEventListener("keydown", (event) => {
         event.preventDefault()
-    this.mesh = getObject(this.state, "robber");
+    
         switch(event.code)
         {
           case "KeyA":
             this.mesh.translate(vec3.fromValues(-0.1, 0,0));
+            //this.mesh.rotateY(vec3.fromValues())
             break;
           
           case "KeyD":
@@ -104,7 +99,7 @@ async onStart() {
 //     // example - set an object in onStart before starting our render loop!
 //     this.cube = getObject(this.state, "cube1");
 //     const otherCube = getObject(this.state, "cube2"); // we wont save this as instance var since we dont plan on using it in update
-
+        
 //     // example - create sphere colliders on our two objects as an example, we give 2 objects colliders otherwise
 //     // no collision can happen
 //     this.createSphereCollider(this.cube, 0.5, (otherObject) => {
@@ -164,7 +159,7 @@ async onStart() {
 
 //     //     tempObject.constantRotate = true;         // lets add a flag so we can access it later
 //     //     this.spawnedObjects.push(tempObject);     // add these to a spawned objects list
-//     //     this.collidableObjects.push(tempObject);  // say these can be collided into
+ //    this.collidableObjects.push(tempObject);  // say these can be collided into
 //     //   }
 //   }
 
@@ -194,7 +189,7 @@ async onStart() {
 
 
 //     // example - call our collision check method on our cube
-//     // this.checkCollision(this.cube);
+
 }
 onUpdate(deltaTime)
 {
@@ -205,7 +200,9 @@ onUpdate(deltaTime)
 
 
   //moveRobber();
+  this.checkCollision(this.mesh);
 
 }
 
 }
+
