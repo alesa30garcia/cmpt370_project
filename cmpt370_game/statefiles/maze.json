@@ -3,7 +3,7 @@
     "material":{"diffuse":[0.9607843160629272,0.9607843160629272,0.9607843160629272],
     "ambient":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
     "specular":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
-    "n":12,"alpha":1,"shaderType":3,
+    "n":12,"alpha":1,"shaderType":2,
     "diffuseTexture":{"texture":{},"name":"Substance_Graph_BaseColor.jpg"},
     "normalTexture":{"texture":{},"name":"Substance_Graph_Normal.jpg"}},
     "type":"cube","position":[0,0,0],"scale":[20,1,20],
