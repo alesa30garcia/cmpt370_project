@@ -1,6 +1,7 @@
 var state = {};
 var game;
-var sceneFile = "maze.json"; // can change this to be the name of your scene
+var sceneFile = "maze.json"; // change shaderType to 3 for floor after we implement normal texturing
+
 
 // This function loads on window load, uses async functions to load the scene then try to render it
 window.onload = async () => {
@@ -12,7 +13,6 @@ window.onload = async () => {
     console.error(err);
     alert(err);
   }
-  return true;
 }
 
 /**
@@ -57,19 +57,22 @@ async function main() {
     `#version 300 es
         in vec3 aPosition;
         in vec3 aNormal;
+        in vec2 aUV;
 
         uniform mat4 uProjectionMatrix;
         uniform mat4 uViewMatrix;
         uniform mat4 uModelMatrix;
 
+        out vec2 oUV;
         out vec3 oNormal;
+        out vec3 oFragPosition;
 
         void main() {
-            // Simply use this normal so no error is thrown
-            oNormal = aNormal;
-
             // Postion of the fragment in world space
             gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(aPosition, 1.0);
+            oFragPosition = normalize((uModelMatrix * vec4(aPosition, 1.0)).xyz);
+            oNormal = normalize((uModelMatrix * vec4(aNormal, 0.0)).xyz);
+            oUV = aUV;
         }
         `;
 
@@ -77,12 +80,35 @@ async function main() {
     `#version 300 es
         #define MAX_LIGHTS 20
         precision highp float;
-
+        
+        //uniform vec3 ambientVal;
         uniform vec3 diffuseVal;
+        //uniform vec3 specularVal;
 
+        struct PointLight {
+        vec3 position;
+        vec3 colour;
+        float strength;
+        };
+        
+        uniform PointLight mainlight;
+        uniform int samplerExists;
+        uniform sampler2D uTexture;
+
+        in vec2 oUV;
         out vec4 fragColor;
+
         void main() {
+            //fragColor = vec4(diffuseVal, 1.0);
+
+            if (samplerExists == 1) {
+            vec3 textureColor = texture(uTexture, oUV).rgb;
+            fragColor = vec4(diffuseVal * textureColor, 1.0);
+            }
+
+            else {
             fragColor = vec4(diffuseVal, 1.0);
+            }
         }
         `;
 
@@ -107,6 +133,7 @@ async function main() {
   state.numLights = state.pointLights.length;
 
   const now = new Date();
+  console.log(state);
   for (let i = 0; i < state.loadObjects.length; i++) {
     const object = state.loadObjects[i];
 
@@ -203,6 +230,7 @@ function drawScene(gl, deltaTime, state) {
   sorted.map((object) => {
     gl.useProgram(object.programInfo.program);
     {
+      //console.log(object);
       // Projection Matrix ....
       let projectionMatrix = mat4.create();
       let fovy = 90.0 * Math.PI / 180.0; // Vertical field of view in radians
@@ -261,8 +289,15 @@ function drawScene(gl, deltaTime, state) {
       gl.uniform1f(object.programInfo.uniformLocations.nVal, object.material.n);
 
       gl.uniform1i(object.programInfo.uniformLocations.numLights, state.numLights);
+
+      let mainLight = state.pointLights[0];
+      gl.uniform3fv(gl.getUniformLocation(object.programInfo.program, 'mainLight.position'), mainLight.position);
+      gl.uniform3fv(gl.getUniformLocation(object.programInfo.program, 'mainLight.colour'), mainLight.colour);
+      gl.uniform1f(gl.getUniformLocation(object.programInfo.program, 'mainLight.strength'), mainLight.strength);
+
       if (state.pointLights.length > 0) {
         for (let i = 0; i < state.pointLights.length; i++) {
+    
           gl.uniform3fv(gl.getUniformLocation(object.programInfo.program, 'pointLights[' + i + '].position'), state.pointLights[i].position);
           gl.uniform3fv(gl.getUniformLocation(object.programInfo.program, 'pointLights[' + i + '].colour'), state.pointLights[i].colour);
           gl.uniform1f(gl.getUniformLocation(object.programInfo.program, 'pointLights[' + i + '].strength'), state.pointLights[i].strength);
@@ -277,25 +312,29 @@ function drawScene(gl, deltaTime, state) {
         gl.bindVertexArray(object.buffers.vao);
 
         //check for diffuse texture and apply it
-        if (object.model.texture != null) {
+        if (object.material.shaderType === 2) {
           state.samplerExists = 1;
           gl.activeTexture(gl.TEXTURE0);
           gl.uniform1i(object.programInfo.uniformLocations.samplerExists, state.samplerExists);
           gl.uniform1i(object.programInfo.uniformLocations.sampler, 0);
           gl.bindTexture(gl.TEXTURE_2D, object.model.texture);
+          //console.log(object.name, "has texture");
+
         } else {
           gl.activeTexture(gl.TEXTURE0);
           state.samplerExists = 0;
           gl.uniform1i(object.programInfo.uniformLocations.samplerExists, state.samplerExists);
+          //console.log("no texture");
         }
 
         //check for normal texture and apply it
-        if (object.model.textureNorm != null) {
+        if (object.material.textureNorm === 3) {
           state.samplerNormExists = 1;
           gl.activeTexture(gl.TEXTURE1);
           gl.uniform1i(object.programInfo.uniformLocations.normalSamplerExists, state.samplerNormExists);
           gl.uniform1i(object.programInfo.uniformLocations.normalSampler, 1);
           gl.bindTexture(gl.TEXTURE_2D, object.model.textureNorm);
+
         } else {
           gl.activeTexture(gl.TEXTURE1);
           state.samplerNormExists = 0;
@@ -308,12 +347,12 @@ function drawScene(gl, deltaTime, state) {
         //if its a mesh then we don't use an index buffer and use drawArrays instead of drawElements
         if (object.type === "mesh" || object.type === "meshCustom") {
           gl.drawArrays(gl.TRIANGLES, offset, object.buffers.numVertices / 3);
+          //console.log(object.name, object.positions.length, object.normals.length);
         } else {
           gl.drawElements(gl.TRIANGLES, object.buffers.numVertices, gl.UNSIGNED_SHORT, offset);
-        }
+       
+       
+        }}
       }
-    }
   });
 }
-
-
