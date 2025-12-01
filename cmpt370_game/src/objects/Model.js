@@ -1,3 +1,4 @@
+
 class Model extends RenderObject {
   constructor(glContext, object, meshDetails) {
     super(glContext, object);
@@ -24,7 +25,8 @@ class Model extends RenderObject {
     //create vertices, normal and indicies arrays
     const positions = new Float32Array(this.model.vertices);
     const normals = new Float32Array(this.model.normals);
-    //const textureCoords = new Float32Array(this.model.uvs);
+    const textureCoords = new Float32Array(this.model.uvs);
+    console.log("positions", positions.length,"normals ", normals.length, "uvs", textureCoords.length);
     var vertexArrayObject = this.gl.createVertexArray();
     this.gl.bindVertexArray(vertexArrayObject);
 
@@ -33,10 +35,11 @@ class Model extends RenderObject {
       attributes: {
         position: initPositionAttribute(this.gl, this.programInfo, positions),
         normal: initNormalAttribute(this.gl, this.programInfo, normals),
-        // uv: initTextureCoords(this.gl, this.programInfo, textureCoords),
+        uv: initTextureCoords(this.gl, this.programInfo, textureCoords),
       },
       numVertices: positions.length
     }
 
   }
 }
+
