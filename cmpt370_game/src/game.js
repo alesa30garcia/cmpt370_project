@@ -4,6 +4,7 @@ class Game {
     this.spawnedObjects = [];
     this.collidableObjects = [];
     this.walls = [];
+    this.dogs = [];          // convenient array of all dogs
   }
 
   // Example custom method
@@ -97,15 +98,6 @@ class Game {
       object.model.position[2] - object.collider.depth / 2;
     object.collider.maxZ =
       object.model.position[2] + object.collider.depth / 2;
-
-    // Debug if you like:
-    // console.log(
-    //   object.name,
-    //   object.collider.minX,
-    //   object.collider.maxX,
-    //   object.collider.minZ,
-    //   object.collider.maxZ
-    // );
   }
 
   // object = sphere (robberTestCollider or robber), walls = axis-aligned boxes
@@ -136,7 +128,6 @@ class Game {
         if (wall.collider.onCollide) {
           wall.collider.onCollide(object);
         }
-        // console.log("Hit wall:", wall.name);
       }
     });
 
@@ -181,6 +172,61 @@ class Game {
     }
   }
 
+  // ---------- DOG PATROL HELPERS ----------
+
+  /**
+   * Set up a simple back-and-forth patrol for a dog.
+   * axis: 'x' or 'z'
+   * range: how far from the start position in each direction
+   * speed: units per second
+   */
+  setupDogPatrol(dog, axis, range, speed) {
+    const startPos = vec3.clone(dog.model.position);
+    const idx = axis === "x" ? 0 : 2;
+
+    dog.patrol = {
+      axis,
+      index: idx,
+      start: startPos[idx],
+      min: startPos[idx] - range,
+      max: startPos[idx] + range,
+      speed,
+      direction: 1, // +1 or -1
+    };
+
+    this.dogs.push(dog);
+  }
+
+  updateDogPatrol(dog, deltaTime) {
+    if (!dog.patrol) return;
+
+    const p = dog.patrol;
+    const idx = p.index;
+
+    // distance to move this frame
+    let step = p.speed * deltaTime * p.direction;
+
+    // proposed new position along patrol axis
+    let newPos = dog.model.position[idx] + step;
+
+    // bounce at ends
+    if (newPos > p.max) {
+      newPos = p.max;
+      p.direction = -1;
+    } else if (newPos < p.min) {
+      newPos = p.min;
+      p.direction = 1;
+    }
+
+    // translate dog by the delta along that axis
+    const delta = vec3.fromValues(0, 0, 0);
+    delta[idx] = newPos - dog.model.position[idx];
+    dog.translate(delta);
+
+    // keep collider in sync
+    this.updateSphereCentre(dog);
+  }
+
   // ---------- STARTUP ----------
 
   async onStart() {
@@ -209,13 +255,6 @@ class Game {
           object.model.scale[2]
         );
         this.walls.push(object);
-        // console.log(
-        //   object.name,
-        //   "pos",
-        //   object.model.position,
-        //   "scale",
-        //   object.model.scale
-        // );
       }
     });
 
@@ -275,6 +314,13 @@ class Game {
     this.createSphereCollider(this.dog3, 1);
     this.createSphereCollider(this.dog4, 1);
     this.createSphereCollider(this.dog5, 1);
+
+    // Set up simple patrols for each dog (tweak ranges/speeds as you like)
+    this.setupDogPatrol(this.dog1, "x", 1.5, 1.0);
+    this.setupDogPatrol(this.dog2, "z", 1.5, 1.0);
+    this.setupDogPatrol(this.dog3, "x", 2.0, 1.2);
+    this.setupDogPatrol(this.dog4, "z", 2.0, 1.2);
+    this.setupDogPatrol(this.dog5, "x", 1.0, 0.8);
 
     // Keyboard movement using test collider first (for wall checks)
     document.addEventListener("keydown", (event) => {
@@ -375,9 +421,6 @@ class Game {
         this.updateSphereCentre(this.robber);
         this.updateSphereCentre(this.robberTestCollider);
       }
-
-      // Debug: current robber position
-      // console.log("Robber position:", this.robber.model.position);
     });
   }
 
@@ -388,6 +431,11 @@ class Game {
     if (this.robber) {
       this.sphereCollision(this.robber);
     }
+
+    // Move each dog along its patrol path
+    this.dogs.forEach((dog) => {
+      this.updateDogPatrol(dog, deltaTime);
+    });
 
     // We DO NOT call boxSphereCollision(this.robber) here,
     // walls are already handled via the test collider in keydown.
