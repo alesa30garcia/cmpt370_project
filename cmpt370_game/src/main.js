@@ -55,62 +55,71 @@ async function main() {
    */
   const vertShaderSample =
     `#version 300 es
-        in vec3 aPosition;
-        in vec3 aNormal;
-        in vec2 aUV;
+    in vec3 aPosition;
+    in vec3 aNormal;
+    in vec2 aUV;
 
-        uniform mat4 uProjectionMatrix;
-        uniform mat4 uViewMatrix;
-        uniform mat4 uModelMatrix;
+    uniform mat4 uProjectionMatrix;
+    uniform mat4 uViewMatrix;
+    uniform mat4 uModelMatrix;
+    uniform mat4 normalMatrix;
 
-        out vec2 oUV;
-        out vec3 oNormal;
-        out vec3 oFragPosition;
+    out vec2 oUV;
+    out vec3 oNormal;
+    out vec3 oFragPosition;
 
-        void main() {
-            // Postion of the fragment in world space
-            gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(aPosition, 1.0);
-            oFragPosition = normalize((uModelMatrix * vec4(aPosition, 1.0)).xyz);
-            oNormal = normalize((uModelMatrix * vec4(aNormal, 0.0)).xyz);
-            oUV = aUV;
-        }
-        `;
+    void main() {
+        // World-space position
+        vec4 worldPos = uModelMatrix * vec4(aPosition, 1.0);
+        oFragPosition = worldPos.xyz;
+
+        // Properly transformed normal (uses the normalMatrix your JS uploads)
+        oNormal = normalize((normalMatrix * vec4(aNormal, 0.0)).xyz);
+
+        oUV = aUV;
+
+        gl_Position = uProjectionMatrix * uViewMatrix * worldPos;
+    }
+  `;
+
 
   const fragShaderSample =
     `#version 300 es
-        #define MAX_LIGHTS 20
-        precision highp float;
-        
-        //uniform vec3 ambientVal;
-        uniform vec3 diffuseVal;
-        //uniform vec3 specularVal;
+      #define MAX_LIGHTS 20
+      precision highp float;
+      
+      //uniform vec3 ambientVal;
+      uniform vec3 diffuseVal;
+      //uniform vec3 specularVal;
 
-        struct PointLight {
+      struct PointLight {
         vec3 position;
         vec3 colour;
         float strength;
-        };
-        
-        uniform PointLight mainlight;
-        uniform int samplerExists;
-        uniform sampler2D uTexture;
+      };
+      
+      uniform PointLight mainlight;
+      uniform int samplerExists;
+      uniform sampler2D sampler;
 
-        in vec2 oUV;
-        out vec4 fragColor;
+      in vec2 oUV;
+      out vec4 fragColor;
 
-        void main() {
-            //fragColor = vec4(diffuseVal, 1.0);
+      void main() {
+        //fragColor = vec4(diffuseVal, 1.0);
 
-            if (samplerExists == 1) {
-            vec3 textureColor = texture(uTexture, oUV).rgb;
-            fragColor = vec4(diffuseVal * textureColor, 1.0);
-            }
-
-            else {
-            fragColor = vec4(diffuseVal, 1.0);
-            }
+        if (samplerExists == 1) {
+          vec3 textureColor = texture(sampler, oUV).rgb;
+          fragColor = vec4(diffuseVal * textureColor, 1.0);
+        } else {
+          fragColor = vec4(diffuseVal, 1.0);
         }
-        `;
+      }
+      `;
+
+
+
+
 
   /**
    * Initialize state with new values (some of these you can replace/change)
@@ -134,6 +143,9 @@ async function main() {
 
   const now = new Date();
   console.log(state);
+  const robberObj = state.loadObjects.find(o => o.name === "robber");
+  console.log("Robber material at runtime:", robberObj.material);
+  
   for (let i = 0; i < state.loadObjects.length; i++) {
     const object = state.loadObjects[i];
 
@@ -311,21 +323,20 @@ function drawScene(gl, deltaTime, state) {
         // Bind the buffer we want to draw
         gl.bindVertexArray(object.buffers.vao);
 
-        //check for diffuse texture and apply it
-        if (object.material.shaderType === 2) {
+        const usesTexture =
+          object.material.shaderType === 2 && !object.name.startsWith("dog");
+
+        if (usesTexture) {
           state.samplerExists = 1;
           gl.activeTexture(gl.TEXTURE0);
           gl.uniform1i(object.programInfo.uniformLocations.samplerExists, state.samplerExists);
           gl.uniform1i(object.programInfo.uniformLocations.sampler, 0);
           gl.bindTexture(gl.TEXTURE_2D, object.model.texture);
-          //console.log(object.name, "has texture");
-
         } else {
           gl.activeTexture(gl.TEXTURE0);
           state.samplerExists = 0;
           gl.uniform1i(object.programInfo.uniformLocations.samplerExists, state.samplerExists);
-          //console.log("no texture");
-        }
+      }
 
         //check for normal texture and apply it
         if (object.material.textureNorm === 3) {
