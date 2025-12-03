@@ -110,7 +110,7 @@ async function main() {
 
         if (samplerExists == 1) {
           vec3 textureColor = texture(sampler, oUV).rgb;
-          fragColor = vec4(diffuseVal * textureColor, 1.0);
+          fragColor = vec4(textureColor, 1.0);
         } else {
           fragColor = vec4(diffuseVal, 1.0);
         }
