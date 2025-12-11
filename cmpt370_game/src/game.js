@@ -139,10 +139,10 @@ class Game {
         // We hit this wall
         collision = true;
         // Optional: wall collider callback
-        if (wall.collider.onCollide) {
-          wall.collider.onCollide(object);
+        // if (wall.collider.onCollide) {
+        //   wall.collider.onCollide(object);
          
-        }
+        // }
       }
     });
 
@@ -211,7 +211,7 @@ class Game {
     };
 
     this.dogs.push(dog);
-    console.log(dog.patrol);
+    
   }
 
   /**
@@ -257,10 +257,8 @@ updateDogPatrol(dog, deltaTime) {
     if (collision) {
        this.rotatePlayer(dog, (dog.patrol.rotation + Math.PI) % (2 * Math.PI));
        dog.patrol.rotation = (dog.patrol.rotation + Math.PI) % (2 * Math.PI);
-       //.log("new rotation" , dog.patrol.rotation);
-       p.direction *= -1;
-       //console.log("pos at collision", dog.model.position);
-   
+    
+       p.direction *= -1; 
     }
 
     // move the actual dog when there is no wall collision
@@ -297,7 +295,7 @@ updateDogPatrol(dog, deltaTime) {
 
       if (object.name.includes("Wall"))
        {
-        //console.log(object.name);
+       
         this.createBoxCollider(
           object,
           object.model.scale[0],
@@ -311,8 +309,7 @@ updateDogPatrol(dog, deltaTime) {
           this.createSphereCollider(
           object,
           1);
-          //console.log(object.name);
-          //console.log(object.model.rotation);
+        
 
           // dogs that are rotated 0 degrees in the y direction move along the x axis 
           if (JSON.stringify(object.model.rotation) == JSON.stringify([0,0,-1,0,0,1,0,0,1,0,0,0,0,0,0,1] )) // dog moves along z axis 

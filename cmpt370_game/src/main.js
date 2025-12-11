@@ -59,6 +59,7 @@ async function main() {
     in vec3 aNormal;
     in vec2 aUV;
 
+    uniform vec3 uCameraPosition;
     uniform mat4 uProjectionMatrix;
     uniform mat4 uViewMatrix;
     uniform mat4 uModelMatrix;
@@ -67,18 +68,22 @@ async function main() {
     out vec2 oUV;
     out vec3 oNormal;
     out vec3 oFragPosition;
+    out vec3 oCameraPosition;
 
     void main() {
         // World-space position
         vec4 worldPos = uModelMatrix * vec4(aPosition, 1.0);
+        
         oFragPosition = worldPos.xyz;
 
         // Properly transformed normal (uses the normalMatrix your JS uploads)
         oNormal = normalize((normalMatrix * vec4(aNormal, 0.0)).xyz);
 
         oUV = aUV;
+        oCameraPosition = uCameraPosition;
 
         gl_Position = uProjectionMatrix * uViewMatrix * worldPos;
+
     }
   `;
 
@@ -88,9 +93,11 @@ async function main() {
       #define MAX_LIGHTS 20
       precision highp float;
       
-      //uniform vec3 ambientVal;
+      uniform vec3 ambientVal;
       uniform vec3 diffuseVal;
-      //uniform vec3 specularVal;
+      uniform vec3 specularVal;
+      uniform float nVal;
+     
 
       struct PointLight {
         vec3 position;
@@ -98,24 +105,61 @@ async function main() {
         float strength;
       };
       
-      uniform PointLight mainlight;
+      uniform PointLight[1] pointLights; // array of one for now because there is only one light 
       uniform int samplerExists;
-      uniform sampler2D sampler;
+      uniform sampler2D uTexture;
 
+      uniform int numLights;
+
+      in vec3 oFragPosition;
       in vec2 oUV;
+      in vec3 oNormal;
+      in vec3 oCameraPosition;
+
       out vec4 fragColor;
 
       void main() {
-        //fragColor = vec4(diffuseVal, 1.0);
+      vec3 totalColor = vec3(0,0,0);
 
-        if (samplerExists == 1) {
-          vec3 textureColor = texture(sampler, oUV).rgb;
-          fragColor = vec4(textureColor, 1.0);
-        } else {
-          fragColor = vec4(diffuseVal, 1.0);
+      // iterate through all the lights 
+       for (int i = 0; i < numLights; i++) 
+        {   
+          vec3 normal = normalize(oNormal);
+          vec3 lightDirection = normalize(pointLights[i].position - oFragPosition); // L vector 
+          vec3 view = normalize(oCameraPosition - oFragPosition); // V vector 
+
+          //calculate blinn-phong shading for that light source
+          vec3 ambient = ambientVal * pointLights[i].colour * pointLights[i].strength;
+
+          float N_dot_L = max(dot(lightDirection, normal), 0.0); 
+          vec3 diffuseLight = pointLights[i].colour * pointLights[i].strength * N_dot_L; 
+
+          vec3 H = normalize(view + lightDirection); // H vector 
+          float H_dot_N = max(dot(H, normal), 0.0);
+          H_dot_N = pow(H_dot_N, nVal);
+          vec3 specular = specularVal * pointLights[i].colour * pointLights[i].strength * H_dot_N ;
+
+          // texture
+          if (samplerExists == 1) 
+          {
+              // get the color from the texture
+              vec3 textureColor = texture(uTexture, oUV).rgb; 
+              totalColor = mix((diffuseVal), textureColor, 0.7);
+              
+              // mix the material diffuse color with the color from the texture 
+              //vec3 diffuseTexture = mix((diffuseVal), textureColour, 0.5);
+
+          } 
+
+          // no texture
+          else 
+          {
+              totalColor = (diffuseLight * diffuseVal) + ambient + specular;
+          }
         }
-      }
-      `;
+      fragColor = vec4(totalColor, 1); // change to include alpha later
+  }
+`;
 
 
 
@@ -140,6 +184,7 @@ async function main() {
   };
 
   state.numLights = state.pointLights.length;
+  console.log(state.numLights);
 
   const now = new Date();
   console.log(state);
@@ -242,7 +287,7 @@ function drawScene(gl, deltaTime, state) {
   sorted.map((object) => {
     gl.useProgram(object.programInfo.program);
     {
-      //console.log(object);
+      console.log(object);
       // Projection Matrix ....
       let projectionMatrix = mat4.create();
       let fovy = 90.0 * Math.PI / 180.0; // Vertical field of view in radians
@@ -267,6 +312,7 @@ function drawScene(gl, deltaTime, state) {
       
       gl.uniformMatrix4fv(object.programInfo.uniformLocations.view, false, viewMatrix);
       gl.uniform3fv(object.programInfo.uniformLocations.cameraPosition, state.camera.position);
+      
       state.viewMatrix = viewMatrix;
 
       // Model Matrix ....
@@ -303,19 +349,19 @@ function drawScene(gl, deltaTime, state) {
 
       gl.uniform1i(object.programInfo.uniformLocations.numLights, state.numLights);
 
-      let mainLight = state.pointLights[0];
-      gl.uniform3fv(gl.getUniformLocation(object.programInfo.program, 'mainLight.position'), mainLight.position);
-      gl.uniform3fv(gl.getUniformLocation(object.programInfo.program, 'mainLight.colour'), mainLight.colour);
-      gl.uniform1f(gl.getUniformLocation(object.programInfo.program, 'mainLight.strength'), mainLight.strength);
-
+      // let mainLight = state.pointLights[0];
+      // gl.uniform3fv(gl.getUniformLocation(object.programInfo.program, 'mainLight.position'), mainLight.position);
+      // gl.uniform3fv(gl.getUniformLocation(object.programInfo.program, 'mainLight.colour'), mainLight.colour);
+      // gl.uniform1f(gl.getUniformLocation(object.programInfo.program, 'mainLight.strength'), mainLight.strength);
+      
       if (state.pointLights.length > 0) {
         for (let i = 0; i < state.pointLights.length; i++) {
     
           gl.uniform3fv(gl.getUniformLocation(object.programInfo.program, 'pointLights[' + i + '].position'), state.pointLights[i].position);
           gl.uniform3fv(gl.getUniformLocation(object.programInfo.program, 'pointLights[' + i + '].colour'), state.pointLights[i].colour);
           gl.uniform1f(gl.getUniformLocation(object.programInfo.program, 'pointLights[' + i + '].strength'), state.pointLights[i].strength);
-          gl.uniform1f(gl.getUniformLocation(object.programInfo.program, 'pointLights[' + i + '].linear'), state.pointLights[i].linear);
-          gl.uniform1f(gl.getUniformLocation(object.programInfo.program, 'pointLights[' + i + '].quadratic'), state.pointLights[i].quadratic);
+          //gl.uniform1f(gl.getUniformLocation(object.programInfo.program, 'pointLights[' + i + '].linear'), state.pointLights[i].linear);
+          //gl.uniform1f(gl.getUniformLocation(object.programInfo.program, 'pointLights[' + i + '].quadratic'), state.pointLights[i].quadratic);
         }
       }
 
@@ -325,9 +371,10 @@ function drawScene(gl, deltaTime, state) {
         gl.bindVertexArray(object.buffers.vao);
 
         const usesTexture =
-          object.material.shaderType === 2 && !object.name.startsWith("dog");
+          object.material.shaderType === 2 // && !object.name.startsWith("dog");
 
         if (usesTexture) {
+         
           state.samplerExists = 1;
           gl.activeTexture(gl.TEXTURE0);
           gl.uniform1i(object.programInfo.uniformLocations.samplerExists, state.samplerExists);
