@@ -184,7 +184,6 @@ async function main() {
   };
 
   state.numLights = state.pointLights.length;
-  console.log(state.numLights);
 
   const now = new Date();
   console.log(state);
@@ -287,7 +286,6 @@ function drawScene(gl, deltaTime, state) {
   sorted.map((object) => {
     gl.useProgram(object.programInfo.program);
     {
-      console.log(object);
       // Projection Matrix ....
       let projectionMatrix = mat4.create();
       let fovy = 90.0 * Math.PI / 180.0; // Vertical field of view in radians

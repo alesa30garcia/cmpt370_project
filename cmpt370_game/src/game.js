@@ -5,6 +5,7 @@ class Game {
     this.collidableObjects = [];
     this.walls = [];
     this.dogs = [];          // convenient array of all dogs
+    
   }
 
   // ---------- SPHERE COLLIDERS (robber, dogs, test collider) ----------
@@ -28,9 +29,25 @@ class Game {
   }
 
   updateSphereCentre(object) {
-    let centre = vec3.create();
+    var centre = vec3.create();
+    if (object.name == "robberTestCollider")
+    {
+    //let centre = vec3.create();
+    let offset = vec3.fromValues(-0.25,0,-0.25); // -0.3 x
+
+   
+    vec3.add(offset, object.centroid, offset);
+    
+    vec3.add(centre, object.model.position, offset);
+    console.log(centre);
+    object.collider.centre = centre;}
+    
+    else
+    {
+    //let centre = vec3.create();
     vec3.add(centre, object.model.position, object.centroid);
     object.collider.centre = centre;
+    }
   }
 
   // Check robber vs all other sphere colliders (dogs etc.)
@@ -320,6 +337,16 @@ updateDogPatrol(dog, deltaTime) {
             {this.setupDogPatrol(object, "z", 1.0);}
           //make an array for speeds so they can be different 
       }
+    else if (object.name.includes("trophy"))
+      {
+        this.createSphereCollider(object, 1);
+      }
+
+    else if (object.name.includes("purse"))
+    {
+
+    }
+
   });
 
     //console.log("walls", this.walls);
@@ -359,8 +386,10 @@ updateDogPatrol(dog, deltaTime) {
 
    
     // Robber and Robber Test Colliders
+    // The robber collider is used for detecting collsions with dogs
+    // The robber test collider is used for detecting wall collisions
     this.createSphereCollider(this.robber, 2);
-    this.createSphereCollider(this.robberTestCollider, 2);
+    this.createSphereCollider(this.robberTestCollider, 1);
     this.updateSphereCentre(this.robber);
     this.updateSphereCentre(this.robberTestCollider);
 
