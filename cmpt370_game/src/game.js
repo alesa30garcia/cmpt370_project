@@ -7,11 +7,6 @@ class Game {
     this.dogs = [];          // convenient array of all dogs
   }
 
-  // Example custom method
-  customMethod() {
-    console.log("Custom method!");
-  }
-
   // ---------- SPHERE COLLIDERS (robber, dogs, test collider) ----------
 
   createSphereCollider(object, radius, onCollide = null) {
@@ -90,17 +85,36 @@ class Game {
   }
 
   updateBoxCollider(object) {
-    object.collider.minX =
-      object.model.position[0] - object.collider.width / 2;
-    object.collider.maxX =
-      object.model.position[0] + object.collider.width / 2;
-    object.collider.minZ =
-      object.model.position[2] - object.collider.depth / 2;
-    object.collider.maxZ =
-      object.model.position[2] + object.collider.depth / 2;
+      if (object.model.scale[0] == 0.5)
+      {
+        var tempX = object.collider.maxX + object.collider.width/2;
+        var tempZ = object.collider.maxZ + object.collider.depth/4;
+      }
+
+      else if (object.model.scale[2] == 0.5)
+        {
+        var tempX = object.collider.maxX + object.collider.width/4;
+        var tempZ = object.collider.maxZ + object.collider.depth/2;
+      }
+
+      object.collider.minX =
+         object.model.position[0] - tempX;
+
+      object.collider.maxX =
+        object.model.position[0] + tempX;
+
+      object.collider.minZ =
+        object.model.position[2] - tempZ;
+
+      object.collider.maxZ =
+        object.model.position[2] + tempZ;
+   
+    //console.log(object.name, "pos", object.model.position,"scale,",object.model.scale, "width",object.collider.width, "depth",object.collider.depth)
+    //console.log(object.collider.minX, object.collider.maxX, object.collider.minZ, object.collider.maxZ);
+    
   }
 
-  // object = sphere (robberTestCollider or robber), walls = axis-aligned boxes
+  // object = sphere (robberTestCollider, robber or dogs), walls = axis-aligned boxes
   boxSphereCollision(object) {
     this.updateSphereCentre(object);
     let collision = false;
@@ -127,6 +141,7 @@ class Game {
         // Optional: wall collider callback
         if (wall.collider.onCollide) {
           wall.collider.onCollide(object);
+         
         }
       }
     });
@@ -151,6 +166,8 @@ class Game {
     if (otherObject.name.startsWith("dog")) {
       vec3.copy(this.robber.model.position, this.robber.spawn);
       mat4.copy(this.robber.model.rotation, this.robber.forward);
+      vec3.copy(this.topDownView.position, this.topDownView.cameraSpawn);
+      vec3.copy(this.topDownView.front, this.topDownView.cameraForward);
 
       // Keep test collider in sync with robber
       mat4.copy(
@@ -172,60 +189,93 @@ class Game {
     }
   }
 
+
+  
   // ---------- DOG PATROL HELPERS ----------
 
   /**
    * Set up a simple back-and-forth patrol for a dog.
    * axis: 'x' or 'z'
-   * range: how far from the start position in each direction
-   * speed: units per second
+   * speed: units per frame update
    */
-  setupDogPatrol(dog, axis, range, speed) {
-    const startPos = vec3.clone(dog.model.position);
+  setupDogPatrol(dog, axis, speed)
+  {
     const idx = axis === "x" ? 0 : 2;
-
+    let rotation = axis === "x" ? ((3 * Math.PI)/2) : 0;
     dog.patrol = {
       axis,
       index: idx,
-      start: startPos[idx],
-      min: startPos[idx] - range,
-      max: startPos[idx] + range,
-      speed,
+      speed: speed,
       direction: 1, // +1 or -1
+      rotation: rotation
     };
 
     this.dogs.push(dog);
+    console.log(dog.patrol);
   }
 
-  updateDogPatrol(dog, deltaTime) {
+  /**
+   * Use wall collsions to determine whether the dog should keep moving in the current direction or 
+   * change directions.
+   * dog: dog object to check 
+   * deltaTime: time since the last frame update
+   */
+updateDogPatrol(dog, deltaTime) {
     if (!dog.patrol) return;
 
+    // clamp the update time so the movement does not become huge
+    // while the tab is not being looked at
+    deltaTime = Math.min(deltaTime, 0.03); 
     const p = dog.patrol;
     const idx = p.index;
 
     // distance to move this frame
     let step = p.speed * deltaTime * p.direction;
 
-    // proposed new position along patrol axis
-    let newPos = dog.model.position[idx] + step;
+    // translate to new position along patrol axis
+    // create a test collider to see if moving in the current direction will cause a wall collision
+    let testPos = vec3.clone(dog.model.position);
+    testPos[idx] += step;
+    let testDog = 
+    {
+      name: "testDog", model:
+      {
+      position: testPos, 
+      scale:dog.model.scale, 
+      }, 
+      centroid: dog.centroid, 
 
-    // bounce at ends
-    if (newPos > p.max) {
-      newPos = p.max;
-      p.direction = -1;
-    } else if (newPos < p.min) {
-      newPos = p.min;
-      p.direction = 1;
+    };
+   
+    this.createSphereCollider(testDog, 1);
+    this.updateSphereCentre(testDog);
+    
+    // test for wall collision
+    let collision = this.boxSphereCollision(testDog);
+    
+    // change direction when the test collider hits the wall
+    if (collision) {
+       this.rotatePlayer(dog, (dog.patrol.rotation + Math.PI) % (2 * Math.PI));
+       dog.patrol.rotation = (dog.patrol.rotation + Math.PI) % (2 * Math.PI);
+       //.log("new rotation" , dog.patrol.rotation);
+       p.direction *= -1;
+       //console.log("pos at collision", dog.model.position);
+   
     }
 
-    // translate dog by the delta along that axis
-    const delta = vec3.fromValues(0, 0, 0);
-    delta[idx] = newPos - dog.model.position[idx];
-    dog.translate(delta);
-
+    // move the actual dog when there is no wall collision
+    if (!collision)
+      {
+      let delta = vec3.fromValues(0, 0, 0);
+      delta[idx] = step;
+      dog.translate(delta);
+    }
+  
     // keep collider in sync
     this.updateSphereCentre(dog);
   }
+
+
 
   // ---------- STARTUP ----------
 
@@ -243,32 +293,52 @@ class Game {
     );
 
     // Create box colliders for walls.
-    // Currently only left/right; you can add more names here as needed.
     this.state.objects.forEach((object) => {
-      if (
-        object.name === "leftWall" ||
-        object.name === "rightWall"
-      ) {
+
+      if (object.name.includes("Wall"))
+       {
+        //console.log(object.name);
         this.createBoxCollider(
           object,
           object.model.scale[0],
-          object.model.scale[2]
-        );
-        this.walls.push(object);
-      }
-    });
+          object.model.scale[2]);
+      
+          this.walls.push(object);
 
-    console.log("walls", this.walls);
+        }
+      else if (object.name.includes("dog"))
+        {
+          this.createSphereCollider(
+          object,
+          1);
+          //console.log(object.name);
+          //console.log(object.model.rotation);
+
+          // dogs that are rotated 0 degrees in the y direction move along the x axis 
+          if (JSON.stringify(object.model.rotation) == JSON.stringify([0,0,-1,0,0,1,0,0,1,0,0,0,0,0,0,1] )) // dog moves along z axis 
+            {this.setupDogPatrol(object, "x", 1.0);}
+
+          // dogs that are rotated 90 degrees in the y direction move along the z axis 
+          else if (JSON.stringify(object.model.rotation) == JSON.stringify([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]))
+            {this.setupDogPatrol(object, "z", 1.0);}
+          //make an array for speeds so they can be different 
+      }
+  });
+
+    //console.log("walls", this.walls);
+    //console.log("dogs", this.dogs);
 
     // Robber and test collider
     this.robber = getObject(this.state, "robber");
+    this.robber.spawn = vec3.clone(this.robber.model.position);
+    this.robber.forward = mat4.clone(this.robber.model.rotation);
 
     this.robberTestCollider = new RenderObject(this.state.gl, {
       name: "robberTestCollider",
       model: {
-        position: vec3.clone(this.robber.model.position),
-        rotation: mat4.clone(this.robber.model.rotation),
-        scale: vec3.clone(this.robber.model.scale),
+        position: vec3.create(),
+        rotation: mat4.create(),
+        scale: vec3.create(),
       },
       modelMatrix: mat4.create(),
     });
@@ -290,38 +360,23 @@ class Game {
       this.robber.centroid
     );
 
-    this.robber.spawn = vec3.clone(this.robber.model.position);
-    this.robber.forward = mat4.clone(this.robber.model.rotation);
-
-    // Dogs
-    this.dog1 = getObject(this.state, "dog");
-    this.dog2 = getObject(this.state, "dog-copy");
-    this.dog3 = getObject(this.state, "dog-copy-copy");
-    this.dog4 = getObject(this.state, "dog-copy-copy-copy");
-    this.dog5 = getObject(
-      this.state,
-      "dog-copy-copy-copy-copy"
-    );
-
-    // Colliders
+   
+    // Robber and Robber Test Colliders
     this.createSphereCollider(this.robber, 2);
     this.createSphereCollider(this.robberTestCollider, 2);
     this.updateSphereCentre(this.robber);
     this.updateSphereCentre(this.robberTestCollider);
 
-    this.createSphereCollider(this.dog1, 1);
-    this.createSphereCollider(this.dog2, 1);
-    this.createSphereCollider(this.dog3, 1);
-    this.createSphereCollider(this.dog4, 1);
-    this.createSphereCollider(this.dog5, 1);
 
-    // Set up simple patrols for each dog (tweak ranges/speeds as you like)
-    this.setupDogPatrol(this.dog1, "x", 1.5, 1.0);
-    this.setupDogPatrol(this.dog2, "z", 1.5, 1.0);
-    this.setupDogPatrol(this.dog3, "x", 2.0, 1.2);
-    this.setupDogPatrol(this.dog4, "z", 2.0, 1.2);
-    this.setupDogPatrol(this.dog5, "x", 1.0, 0.8);
+    // Set up camera 
+    this.topDownView = this.state.camera;
+    
+    this.topDownView.cameraSpawn = vec3.create();
+    this.topDownView.cameraForward = vec3.create();
 
+    vec3.copy(this.topDownView.cameraSpawn, this.state.camera.position);
+    vec3.copy(this.topDownView.cameraForward , this.state.camera.front);
+   
     // Keyboard movement using test collider first (for wall checks)
     document.addEventListener("keydown", (event) => {
       event.preventDefault();
@@ -330,7 +385,7 @@ class Game {
       switch (event.code) {
         case "KeyA":
           this.robberTestCollider.translate(
-            vec3.fromValues(-0.1, 0, 0)
+            vec3.fromValues(- 0.1, 0, 0)
           );
           break;
 
@@ -348,7 +403,7 @@ class Game {
 
         case "KeyW":
           this.robberTestCollider.translate(
-            vec3.fromValues(0, 0, -0.1)
+            vec3.fromValues(0, 0, - 0.1)
           );
           break;
 
@@ -385,19 +440,28 @@ class Game {
         switch (event.code) {
           case "KeyA":
             this.robber.translate(
-              vec3.fromValues(-0.1, 0, 0)
+              vec3.fromValues(- 0.1, 0, 0)
             );
             this.rotatePlayer(this.robber, Math.PI / 2);
+          
+            vec3.add(this.topDownView.position, 
+              this.topDownView.position,
+              vec3.fromValues(- 0.1, 0, 0)
+            );
+
             break;
 
           case "KeyD":
             this.robber.translate(
               vec3.fromValues(0.1, 0, 0)
             );
-            this.rotatePlayer(
-              this.robber,
-              3 * (Math.PI / 2)
+            this.rotatePlayer(this.robber, 3 * (Math.PI / 2));
+           
+            vec3.add(this.topDownView.position, 
+              this.topDownView.position,
+              vec3.fromValues(0.1, 0, 0)
             );
+
             break;
 
           case "KeyS":
@@ -405,19 +469,29 @@ class Game {
               vec3.fromValues(0, 0, 0.1)
             );
             this.rotatePlayer(this.robber, 0);
+            vec3.add(this.topDownView.position, 
+              this.topDownView.position,
+              vec3.fromValues(0, 0, 0.1)
+            );
+
             break;
 
           case "KeyW":
             this.robber.translate(
-              vec3.fromValues(0, 0, -0.1)
+              vec3.fromValues(0, 0, - 0.1)
             );
             this.rotatePlayer(this.robber, Math.PI);
+            vec3.add(this.topDownView.position, 
+              this.topDownView.position,
+              vec3.fromValues(0, 0, - 0.1)
+            );
+
             break;
 
           default:
             break;
         }
-
+        //console.log(this.robber.model.position);
         this.updateSphereCentre(this.robber);
         this.updateSphereCentre(this.robberTestCollider);
       }
@@ -436,6 +510,7 @@ class Game {
     this.dogs.forEach((dog) => {
       this.updateDogPatrol(dog, deltaTime);
     });
+   
 
     // We DO NOT call boxSphereCollision(this.robber) here,
     // walls are already handled via the test collider in keydown.

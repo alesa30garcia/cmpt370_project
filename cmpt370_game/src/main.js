@@ -264,6 +264,7 @@ function drawScene(gl, deltaTime, state) {
         camFront,
         state.camera.up,
       );
+      
       gl.uniformMatrix4fv(object.programInfo.uniformLocations.view, false, viewMatrix);
       gl.uniform3fv(object.programInfo.uniformLocations.cameraPosition, state.camera.position);
       state.viewMatrix = viewMatrix;
