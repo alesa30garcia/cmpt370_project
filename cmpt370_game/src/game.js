@@ -30,21 +30,21 @@ class Game {
 
   updateSphereCentre(object) {
     var centre = vec3.create();
+
+    // the robberTestCollider centre needs to be offset for more accurate wall 
+    // to robber collision detection
+
     if (object.name == "robberTestCollider")
     {
-    //let centre = vec3.create();
-    let offset = vec3.fromValues(-0.25,0,-0.25); // -0.3 x
-
-   
+    let offset = vec3.fromValues(-0.25,0,-0.25);
     vec3.add(offset, object.centroid, offset);
     
     vec3.add(centre, object.model.position, offset);
     console.log(centre);
     object.collider.centre = centre;}
-    
+
     else
     {
-    //let centre = vec3.create();
     vec3.add(centre, object.model.position, object.centroid);
     object.collider.centre = centre;
     }
