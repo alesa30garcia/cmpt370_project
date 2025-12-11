@@ -147,6 +147,7 @@ class Cube extends RenderObject {
 
   async setup() {
     this.centroid = calculateCentroid(this.model.vertices);
+    
     this.lightingShader();
     this.scale(this.initialTransform.scale);
     this.translate(this.initialTransform.position);

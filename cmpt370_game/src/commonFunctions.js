@@ -50,7 +50,8 @@ function loadShader(gl, type, source) {
     } else if (type === gl.FRAGMENT_SHADER) {
       typeStr = 'FRAGMENT';
     }
-    printError('An error occurred compiling the shader: ' + typeStr, gl.getShaderInfoLog(shader));
+    // was printError before
+    console.error('An error occurred compiling the shader: ' + typeStr, gl.getShaderInfoLog(shader));
     gl.deleteShader(shader);
     return null;
   }

@@ -14,6 +14,7 @@ class Model extends RenderObject {
 
   async setup() {
     this.centroid = await asyncCalcCentroid(this.model.vertices);
+    
     this.lightingShader();
     this.scale(this.initialTransform.scale);
     this.translate(this.initialTransform.position);
