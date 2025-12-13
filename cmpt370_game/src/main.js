@@ -97,6 +97,7 @@ async function main() {
       uniform vec3 diffuseVal;
       uniform vec3 specularVal;
       uniform float nVal;
+      uniform float alphaVal;
      
 
       struct PointLight {
@@ -144,11 +145,9 @@ async function main() {
           {
               // get the color from the texture
               vec3 textureColor = texture(uTexture, oUV).rgb; 
-              totalColor = mix((diffuseVal), textureColor, 0.7);
-              
-              // mix the material diffuse color with the color from the texture 
-              //vec3 diffuseTexture = mix((diffuseVal), textureColour, 0.5);
 
+              // mix the material diffuse color with the color from the texture 
+              totalColor = mix((diffuseVal), textureColor, 0.7);
           } 
 
           // no texture
@@ -157,7 +156,7 @@ async function main() {
               totalColor = (diffuseLight * diffuseVal) + ambient + specular;
           }
         }
-      fragColor = vec4(totalColor, 1); // change to include alpha later
+      fragColor = vec4(totalColor, alphaVal); // change to include alpha later
   }
 `;
 
@@ -175,6 +174,7 @@ async function main() {
     fragShaderSample,
     canvas: canvas,
     objectCount: 0,
+    visibleObjects: [], 
     lightIndices: [],
     keyboard: {},
     mouse: { sensitivity: 0.2 },
@@ -184,7 +184,6 @@ async function main() {
   };
 
   state.numLights = state.pointLights.length;
-  console.log(state.numLights);
 
   const now = new Date();
   console.log(state);
@@ -262,32 +261,69 @@ function startRendering(gl, state) {
  * @purpose Iterate through game objects and render the objects aswell as update uniforms
  */
 function drawScene(gl, deltaTime, state) {
-  gl.clearColor(state.settings.backgroundColor[0], state.settings.backgroundColor[1], state.settings.backgroundColor[2], 1.0); // Here we are drawing the background color that is saved in our state
-  gl.enable(gl.DEPTH_TEST); // Enable depth testing
-  gl.depthFunc(gl.LEQUAL); // Near things obscure far things
+  // Drawing the background color that is saved in our state
+  gl.clearColor(state.settings.backgroundColor[0], 
+  state.settings.backgroundColor[1],  
+  state.settings.backgroundColor[2], 1.0); 
+
   gl.disable(gl.CULL_FACE); // Cull the backface of our objects to be more efficient
   gl.cullFace(gl.BACK);
-  // gl.frontFace(gl.CCW);
   gl.clearDepth(1.0); // Clear everything
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+  gl.depthMask(false);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.ONE_MINUS_CONSTANT_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+ 
   // sort objects by nearness to camera
   let sorted = state.objects.sort((a, b) => {
+    
     let aCentroidFour = vec4.fromValues(a.centroid[0], a.centroid[1], a.centroid[2], 1.0);
     vec4.transformMat4(aCentroidFour, aCentroidFour, a.modelMatrix);
 
     let bCentroidFour = vec4.fromValues(b.centroid[0], b.centroid[1], b.centroid[2], 1.0);
     vec4.transformMat4(bCentroidFour, bCentroidFour, b.modelMatrix);
 
-    return vec3.distance(state.camera.position, vec3.fromValues(aCentroidFour[0], aCentroidFour[1], aCentroidFour[2]))
-      >= vec3.distance(state.camera.position, vec3.fromValues(bCentroidFour[0], bCentroidFour[1], bCentroidFour[2])) ? -1 : 1;
+    let aDistance = vec3.distance(state.camera.position, 
+      vec3.fromValues(aCentroidFour[0], aCentroidFour[1], aCentroidFour[2]))
+    let bDistance =  vec3.distance(state.camera.position, 
+      vec3.fromValues(bCentroidFour[0], bCentroidFour[1], bCentroidFour[2]))
+
+  // when a is closer return negative
+  // when b is closer return positive
+    return  bDistance- aDistance; 
+
   });
+  console.log("sort",sorted);
+
+
 
   // iterate over each object and render them
   sorted.map((object) => {
     gl.useProgram(object.programInfo.program);
     {
-      console.log(object);
+       // Update uniforms
+        
+            if (object.material.alpha < 1.0) {
+                // TODO turn off depth masking
+                // enable blending and specify blending function 
+                // render translucent objects
+                gl.depthMask(false);
+                gl.enable(gl.BLEND);
+                gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            
+
+            }
+            else {
+                // TODO disable blending 
+                // enable depth masking and z-buffering
+                // specify depth function
+                // render opaque objects         
+                gl.disable(gl.BLEND);
+                gl.depthMask(true);
+                gl.enable(gl.DEPTH_TEST);
+                gl.depthFunc(gl.LEQUAL);
+            }
       // Projection Matrix ....
       let projectionMatrix = mat4.create();
       let fovy = 90.0 * Math.PI / 180.0; // Vertical field of view in radians
@@ -346,14 +382,9 @@ function drawScene(gl, deltaTime, state) {
       gl.uniform3fv(object.programInfo.uniformLocations.ambientVal, object.material.ambient);
       gl.uniform3fv(object.programInfo.uniformLocations.specularVal, object.material.specular);
       gl.uniform1f(object.programInfo.uniformLocations.nVal, object.material.n);
-
+      gl.uniform1f(object.programInfo.uniformLocations.alphaVal, object.material.alpha);
       gl.uniform1i(object.programInfo.uniformLocations.numLights, state.numLights);
 
-      // let mainLight = state.pointLights[0];
-      // gl.uniform3fv(gl.getUniformLocation(object.programInfo.program, 'mainLight.position'), mainLight.position);
-      // gl.uniform3fv(gl.getUniformLocation(object.programInfo.program, 'mainLight.colour'), mainLight.colour);
-      // gl.uniform1f(gl.getUniformLocation(object.programInfo.program, 'mainLight.strength'), mainLight.strength);
-      
       if (state.pointLights.length > 0) {
         for (let i = 0; i < state.pointLights.length; i++) {
     

@@ -304,16 +304,16 @@ OBJLoader.prototype = {
             },
 
             addUV: function (a, b, c) {
-
                 var src = this.uvs;
                 var dst = this.object.geometry.uvs;
-
+            
                 dst.push(src[a + 0]);
                 dst.push(src[a + 1]);
                 dst.push(src[b + 0]);
                 dst.push(src[b + 1]);
                 dst.push(src[c + 0]);
                 dst.push(src[c + 1]);
+            
 
             },
 
@@ -321,9 +321,10 @@ OBJLoader.prototype = {
 
                 var src = this.uvs;
                 var dst = this.object.geometry.uvs;
-
+            
                 dst.push(src[a + 0]);
                 dst.push(src[a + 1]);
+            
 
             },
 
@@ -427,7 +428,7 @@ OBJLoader.prototype = {
 
     },
 
-    parse: function (text, debug) {
+    parse: function (text, combine, debug) {
         if (typeof (debug) === 'undefined') {
             debug = true;
         }
@@ -752,6 +753,32 @@ OBJLoader.prototype = {
 
         //   return container;
 
+
+        if (combine) {
+            // combine all of the objects geometry so it can load objs
+            // with multiple objects defined
+
+            let vertices = [];
+            let uvs = [];
+            let normals = [];
+
+            for (let i = 0; i < state.objects.length; i++) {
+                vertices = vertices.concat(state.objects[i].geometry.vertices.flat());
+                uvs = uvs.concat(state.objects[i].geometry.uvs.flat());
+                normals = normals.concat(state.objects[i].geometry.normals.flat());
+            }
+
+            return {
+                vertices,
+                uvs,
+                normals,
+                sparse: {
+                    vertices: vertices,
+                    uvs: uvs,
+                    normals: normals,
+                }
+            };
+        }
         return {
             vertices: state.object.geometry.vertices,
             uvs: state.object.geometry.uvs,

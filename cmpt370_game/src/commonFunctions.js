@@ -50,8 +50,7 @@ function loadShader(gl, type, source) {
     } else if (type === gl.FRAGMENT_SHADER) {
       typeStr = 'FRAGMENT';
     }
-    // was printError before
-    console.error('An error occurred compiling the shader: ' + typeStr, gl.getShaderInfoLog(shader));
+    printError('An error occurred compiling the shader: ' + typeStr, gl.getShaderInfoLog(shader));
     gl.deleteShader(shader);
     return null;
   }
@@ -349,7 +348,9 @@ function parseOBJFileToJSON(objFileURL) {
         return data.text();
       })
       .then((text) => {
-        let mesh = OBJLoader.prototype.parse(text);
+        // passing true here loads all meshes of an OBJ file instead of just one
+        // and combines it into one mesh object
+        let mesh = OBJLoader.prototype.parse(text, true);
         resolve(mesh);
       })
       .catch((err) => {
