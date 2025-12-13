@@ -291,21 +291,16 @@ function drawScene(gl, deltaTime, state) {
 
   // when a is closer return negative
   // when b is closer return positive
-    return  bDistance- aDistance; 
+    return  bDistance - aDistance; 
 
   });
-  console.log("sort",sorted);
-
-
 
   // iterate over each object and render them
   sorted.map((object) => {
     gl.useProgram(object.programInfo.program);
     {
-       // Update uniforms
         
             if (object.material.alpha < 1.0) {
-                // TODO turn off depth masking
                 // enable blending and specify blending function 
                 // render translucent objects
                 gl.depthMask(false);
@@ -315,7 +310,6 @@ function drawScene(gl, deltaTime, state) {
 
             }
             else {
-                // TODO disable blending 
                 // enable depth masking and z-buffering
                 // specify depth function
                 // render opaque objects         
@@ -324,6 +318,9 @@ function drawScene(gl, deltaTime, state) {
                 gl.enable(gl.DEPTH_TEST);
                 gl.depthFunc(gl.LEQUAL);
             }
+
+      // Update uniforms
+
       // Projection Matrix ....
       let projectionMatrix = mat4.create();
       let fovy = 90.0 * Math.PI / 180.0; // Vertical field of view in radians
@@ -402,7 +399,7 @@ function drawScene(gl, deltaTime, state) {
         gl.bindVertexArray(object.buffers.vao);
 
         const usesTexture =
-          object.material.shaderType === 2 // && !object.name.startsWith("dog");
+          object.material.shaderType === 2 
 
         if (usesTexture) {
          
@@ -437,7 +434,7 @@ function drawScene(gl, deltaTime, state) {
         //if its a mesh then we don't use an index buffer and use drawArrays instead of drawElements
         if (object.type === "mesh" || object.type === "meshCustom") {
           gl.drawArrays(gl.TRIANGLES, offset, object.buffers.numVertices / 3);
-          //console.log(object.name, object.positions.length, object.normals.length);
+  
         } else {
           gl.drawElements(gl.TRIANGLES, object.buffers.numVertices, gl.UNSIGNED_SHORT, offset);
        
