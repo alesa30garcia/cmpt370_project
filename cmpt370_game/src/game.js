@@ -90,7 +90,7 @@ class Game {
     };
 
     // Don't add the test collider to the main collidable list
-    if (object !== this.robberTestCollider && object.name !== "testDog") {
+    if (object !== this.robberTestCollider && object.name !== "testDog" && object.name !== "testRobber") {
       this.collidableSpheres.push(object);
     }
   }
@@ -107,7 +107,7 @@ class Game {
     vec3.add(offset, object.centroid, offset);
     
     vec3.add(centre, object.model.position, offset);
-
+    
     object.collider.centre = centre;}
 
     else
@@ -144,11 +144,13 @@ class Game {
           
 
           // Robber collected an item 
-        } else {
+        } else if (otherObject.name !== "testRobber") {
+          console.log(otherObject);
           this.playSound("collectionSound");
           this.collected += 1;
           const counter = document.getElementById("itemCounter");
-          counter.textContent = "Items Collected: " + this.collected;
+          counter.textContent = "Items Collected: " + this.collected + "/5";
+          console.log(this.collidableSpheres);
         
 
           // remove the item from the list of collidable objects and from 
@@ -327,12 +329,13 @@ class Game {
     this.updateSphereCentre(dog);
   }
 
-playSound(soundId)
-{
-  let soundEffect = document.getElementById(soundId);
-  soundEffect.play();
-  
-}
+// --- COLLISION SOUND EFFECTS ---
+  playSound(soundId)
+  {
+    let soundEffect = document.getElementById(soundId);
+    soundEffect.play();
+    
+  }
 
   // ---------- CAMERA ----------
   updateCamera() {
@@ -378,17 +381,17 @@ playSound(soundId)
     obj.isDespawned = true;
   }
 
-  makeCollectible(obj, radius = 0.8, onCollect = null) {
-    // add a sphere collider that "collects" when the robber touches it
-    this.createSphereCollider(obj, radius, (other) => {
-      if (!other || other.name !== "robber") return;
-      if (obj.isDespawned) return;
+  // makeCollectible(obj, radius = 0.8, onCollect = null) {
+  //   // add a sphere collider that "collects" when the robber touches it
+  //   this.createSphereCollider(obj, radius, (other) => {
+  //     if (!other || other.name !== "robber") return;
+  //     if (obj.isDespawned) return;
 
-      if (onCollect) onCollect(obj);
+  //     if (onCollect) onCollect(obj);
 
-      this.despawnObject(obj);
-    });
-  }
+  //     this.despawnObject(obj);
+  //   });
+  // }
 
   // ---------- STARTUP ----------
   async onStart() {
@@ -406,8 +409,8 @@ playSound(soundId)
         this.createBoxCollider(object, object.model.scale[0], object.model.scale[2]);
         this.walls.push(object);
       }
-      else if (object.name.includes("dog")) {
-        this.createSphereCollider(object, 1);
+      // else if (object.name.includes("dog")) {
+      //   this.createSphereCollider(object, 1);
 
       if (object.name.includes("Wall"))
        {
@@ -445,13 +448,13 @@ playSound(soundId)
         }
     else if (object.name.includes("trophy"))
         {
-        this.createSphereCollider(object, 2); 
+        this.createSphereCollider(object, 5); 
         }
 
     else if (object.name.includes("purse"))
       {
        this.createSphereCollider(object, 1); 
-    }
+      }
 
   });
 
@@ -507,22 +510,22 @@ playSound(soundId)
     vec3.subtract(this.topDownOffset, this.topDownView.position, this.robber.model.position);
 
     // --- TROPHY COLLECTIBLES ---
-    this.trophiesCollected = 0;
+    // this.trophiesCollected = 0;
 
-    this.state.objects.forEach((object) => {
-      // adjust this condition if your trophy names differ
-      if (object.name && object.name.toLowerCase().includes("trophy")) {
-        this.makeCollectible(object, 0.8, () => {
-          this.trophiesCollected += 1;
-          console.log(`Trophy collected: ${this.trophiesCollected}/3`);
+    // this.state.objects.forEach((object) => {
+    //   // adjust this condition if your trophy names differ
+    //   if (object.name && object.name.toLowerCase().includes("trophy")) {
+    //     this.makeCollectible(object, 0.8, () => {
+    //       this.trophiesCollected += 1;
+    //       console.log(`Trophy collected: ${this.trophiesCollected}/3`);
 
-          // Example: win condition
-          if (this.trophiesCollected >= 3) {
-            console.log("All trophies collected!");
-          }
-        });
-      }
-    });
+    //       // Example: win condition
+    //       if (this.trophiesCollected >= 3) {
+    //         console.log("All trophies collected!");
+    //       }
+    //     });
+    //   }
+    // });
 
 
     // ---------- CONTROLS ----------
@@ -643,7 +646,7 @@ playSound(soundId)
   onUpdate(deltaTime) {
 
     // Check robber to dog collsions 
-    // Check robber to collectable objects 
+    // Check robber to collectable object collisions 
     if (this.robber) {
       this.sphereCollision(this.robber);
     }
