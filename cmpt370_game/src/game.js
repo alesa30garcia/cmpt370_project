@@ -1,10 +1,13 @@
 class Game {
   constructor(state) {
     this.state = state;
-    this.spawnedObjects = [];
-    this.collidableObjects = [];
+    this.collidableSpheres = [];
     this.walls = [];
     this.dogs = [];          // convenient array of all dogs
+    this.collected = 4;
+    this.gameComplete = false;
+    this.timesHit= 0;
+    
     
   }
 
@@ -23,8 +26,8 @@ class Game {
     };
 
     // Don't add the test collider to the main collidable list
-    if (object !== this.robberTestCollider) {
-      this.collidableObjects.push(object);
+    if (object !== this.robberTestCollider && object.name !== "testDog") {
+      this.collidableSpheres.push(object);
     }
   }
 
@@ -40,7 +43,7 @@ class Game {
     vec3.add(offset, object.centroid, offset);
     
     vec3.add(centre, object.model.position, offset);
-    console.log(centre);
+
     object.collider.centre = centre;}
 
     else
@@ -50,11 +53,11 @@ class Game {
     }
   }
 
-  // Check robber vs all other sphere colliders (dogs etc.)
+  // Check robber vs all other sphere colliders (dogs and collectibles)
   sphereCollision(object) {
     this.updateSphereCentre(object);
 
-    this.collidableObjects.forEach((otherObject) => {
+    this.collidableSpheres.forEach((otherObject) => {
       if (otherObject.name === object.name) return;
 
       this.updateSphereCentre(otherObject);
@@ -71,9 +74,25 @@ class Game {
           otherObject.name.startsWith("dog")
         ) {
           // Robber got caught by a dog
+          this.playSound("dogBark");
+          this.timesHit += 1;
+
           this.playerCollision(otherObject);
+          
+
+          // Robber collected an item 
         } else {
-          object.collider.onCollide(otherObject);
+          this.playSound("collectionSound");
+          this.collected += 1;
+          const counter = document.getElementById("itemCounter");
+          counter.textContent = "Items Collected: " + this.collected;
+        
+
+          // remove the item from the list of collidable objects and from 
+          // the list of objects that are rendered
+          this.collidableSpheres = this.collidableSpheres.filter(o => o !== otherObject);
+          this.state.objects = this.state.objects.filter(o => o !== otherObject);
+          
         }
       }
     });
@@ -98,7 +117,7 @@ class Game {
     };
 
     this.updateBoxCollider(object);
-    this.collidableObjects.push(object);
+   
   }
 
   updateBoxCollider(object) {
@@ -125,10 +144,6 @@ class Game {
 
       object.collider.maxZ =
         object.model.position[2] + tempZ;
-   
-    //console.log(object.name, "pos", object.model.position,"scale,",object.model.scale, "width",object.collider.width, "depth",object.collider.depth)
-    //console.log(object.collider.minX, object.collider.maxX, object.collider.minZ, object.collider.maxZ);
-    
   }
 
   // object = sphere (robberTestCollider, robber or dogs), walls = axis-aligned boxes
@@ -291,12 +306,22 @@ updateDogPatrol(dog, deltaTime) {
   }
 
 
+playSound(soundId)
+{
+  let soundEffect = document.getElementById(soundId);
+  soundEffect.play();
+  
+}
+
 
   // ---------- STARTUP ----------
 
   async onStart() {
+    this.startTime = new Date();
     console.log("On start");
     console.log("this state", this.state);
+
+    
 
     // prevent context menu on right-click
     document.addEventListener(
@@ -312,7 +337,6 @@ updateDogPatrol(dog, deltaTime) {
 
       if (object.name.includes("Wall"))
        {
-       
         this.createBoxCollider(
           object,
           object.model.scale[0],
@@ -326,31 +350,41 @@ updateDogPatrol(dog, deltaTime) {
           this.createSphereCollider(
           object,
           1);
-        
 
+          // a float between 0 and 1 will be added to the dog's base speed of 0.7
+          var speed = Math.random(); 
+        
           // dogs that are rotated 0 degrees in the y direction move along the x axis 
-          if (JSON.stringify(object.model.rotation) == JSON.stringify([0,0,-1,0,0,1,0,0,1,0,0,0,0,0,0,1] )) // dog moves along z axis 
-            {this.setupDogPatrol(object, "x", 1.0);}
+          if (JSON.stringify(object.model.rotation) 
+            == JSON.stringify([0,0,-1,0,0,1,0,0,1,0,0,0,0,0,0,1] )) // dog moves along z axis 
+            {
+              this.setupDogPatrol(object, "x", (0.7 + speed));
+            }
 
           // dogs that are rotated 90 degrees in the y direction move along the z axis 
-          else if (JSON.stringify(object.model.rotation) == JSON.stringify([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]))
-            {this.setupDogPatrol(object, "z", 1.0);}
-          //make an array for speeds so they can be different 
-      }
+          else if (JSON.stringify(object.model.rotation) == 
+            JSON.stringify([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]))
+            {
+              this.setupDogPatrol(object, "z", (0.7 + speed));
+            }
+    
+        }
     else if (object.name.includes("trophy"))
-      {
-        this.createSphereCollider(object, 1);
-      }
+        {
+        this.createSphereCollider(object, 2); 
+        }
 
     else if (object.name.includes("purse"))
-    {
-
+      {
+       this.createSphereCollider(object, 1); 
     }
 
   });
 
     //console.log("walls", this.walls);
     //console.log("dogs", this.dogs);
+    console.log("collidable spheres", this.collidableSpheres);
+    console.log("num collected", this.collected);
 
     // Robber and test collider
     this.robber = getObject(this.state, "robber");
@@ -517,7 +551,6 @@ updateDogPatrol(dog, deltaTime) {
           default:
             break;
         }
-        //console.log(this.robber.model.position);
         this.updateSphereCentre(this.robber);
         this.updateSphereCentre(this.robberTestCollider);
       }
@@ -527,7 +560,8 @@ updateDogPatrol(dog, deltaTime) {
   // ---------- PER-FRAME UPDATE ----------
 
   onUpdate(deltaTime) {
-    // Check robber vs dogs
+    // Check robber to dog collsions 
+    // Check robber to collectable objects 
     if (this.robber) {
       this.sphereCollision(this.robber);
     }
@@ -536,9 +570,30 @@ updateDogPatrol(dog, deltaTime) {
     this.dogs.forEach((dog) => {
       this.updateDogPatrol(dog, deltaTime);
     });
-   
 
-    // We DO NOT call boxSphereCollision(this.robber) here,
-    // walls are already handled via the test collider in keydown.
+
+    // Game over
+    if (this.collected == 5 && this.gameComplete == false){
+      this.gameComplete = true;
+      document.getElementById("gameOver").style.display = "flex";
+      console.log("done");
+
+      // display the final score and restart button 
+      let baseScore = 10000;
+      let endTime = new Date();
+      let totalTime = endTime - this.startTime; //ms 
+      totalTime /= 1000;
+
+      // score is calculated by subtracting the time taken to complete the game 
+      // and the number of times the player was hit, from the base score 10000
+      // lowest score possible is 0 
+      let finalScore = Math.max(0, baseScore - Math.floor(totalTime * 10)
+         - (this.timesHit *10));
+      document.getElementById("finalScore").textContent =" Score:" + finalScore;
+    }
   }
 }
+
+function restartGame(){
+  location.reload();
+  }

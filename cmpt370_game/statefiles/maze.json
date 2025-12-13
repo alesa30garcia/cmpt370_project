@@ -1,5 +1,5 @@
 {"objects":[
-    {"name":"floor2",
+    {"name":"floor",
     "material":{"diffuse":[0.2,0.1,0.1],
     "ambient":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
     "specular":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
@@ -154,7 +154,7 @@
     "n":12,"alpha":1,"shaderType":1,
     "diffuseTexture":{"texture":{},"name":"craneIconTealInverse.png"},
     "normalTexture":{"texture":{},"name":"defaultNormal.jpg"}},
-    "type":"cube","position":[-5,1,1],"scale":[0.5,5,3],
+    "type":"cube","position":[-4.2,1,1],"scale":[3,5,0.5],
     "rotation": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
     "rotationEulers":{"x":0,"y":0,"z":0},"parent":null,"model":null},
     
@@ -162,9 +162,9 @@
         "name": "robber",
         "material": {
             "diffuse": [
-                0.0,
-                1.0,
-                0.0
+                0.5,
+                0.4,
+                0.7
             ],
             "ambient": [
                 0.15,
@@ -181,7 +181,7 @@
             "shaderType": 2,
             "diffuseTexture": {
                 "texture": {},
-                "name": "Merged_Penguin_retopo.png"
+                "name": "Robber-TM_u0_v0.jpg"
             },
             "normalTexture": {
                 "texture": {},
@@ -224,7 +224,7 @@
         },
         "parent": null,
         "model": null,
-        "fileName": "robber2.obj"
+        "fileName": "robberFlipV.obj"
     },
     
     {
@@ -576,8 +576,8 @@
     "n":12,"alpha":1,"shaderType":1,
     "diffuseTexture":{"texture":{},"name":"craneIconTealInverse.png"},
     "normalTexture":{"texture":{},"name":"defaultNormal.jpg"}},
-    "type":"mesh","position":[-2,-31,4.5],
-    "scale":[0.004999999888241291,0.004999999888241291,0.004999999888241291],
+    "type":"mesh","position":[-2,-3,4.5],
+    "scale":[0.007,0.007,0.007],
     "rotation":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
     "rotationEulers":{"x":0,"y":0,"z":0},
     "parent":null,"model":null,"fileName":"trophy.obj"},
@@ -592,7 +592,7 @@
     "diffuseTexture":{"texture":{},"name":"craneIconTealInverse.png"},
     "normalTexture":{"texture":{},"name":"defaultNormal.jpg"}},
     "type":"mesh","position":[1,-31,-2],
-    "scale":[0.004999999888241291,0.004999999888241291,0.004999999888241291],
+    "scale":[0.007,0.007,0.007],
     "rotation":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
     "rotationEulers":{"x":0,"y":0,"z":0},"parent":null,"model":null,"fileName":"trophy.obj"},
 
@@ -604,8 +604,8 @@
     "n":12,"alpha":1,"shaderType":1,
     "diffuseTexture":{"texture":{},"name":"craneIconTealInverse.png"},
     "normalTexture":{"texture":{},"name":"defaultNormal.jpg"}},
-    "type":"mesh","position":[4,-31,0],
-    "scale":[0.004999999888241291,0.004999999888241291,0.004999999888241291],
+    "type":"mesh","position":[4,-3,0],
+    "scale":[0.007,0.007,0.007],
     "rotation":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
     "rotationEulers":{"x":0,"y":0,"z":0},
     "parent":null,"model":null,"fileName":"trophy.obj"},
@@ -620,7 +620,7 @@
     "diffuseTexture":{"texture":{},"name":"laptop_7_speaker.png"},
     "normalTexture":{"texture":{},"name":"Leather_Worn_Normal_mqt_1024.jpg"}},
     "type":"mesh","position":[2,2,-4],
-    "scale":[0.3,0.2,0.2],
+    "scale":[0.4,0.2,0.3],
     "rotation":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
     "rotationEulers":{"x":0,"y":0,"z":0},
     "parent":null,"model":null,"fileName":"purse2.obj"},
@@ -635,7 +635,7 @@
     "diffuseTexture":{"texture":{},"name":"tacsesz.png"},
     "normalTexture":{"texture":{},"name":"tacsesz.png"}},
     "type":"mesh","position":[-4,2,-4],
-    "scale":[0.3,0.2,0.2],
+    "scale":[0.3,0.2,0.3],
     "rotation":[0.1218692883849144,0,0.9925462007522583,0,0,1,0,0,-0.9925462007522583,0,0.1218692883849144,0,0,0,0,1],
     "rotationEulers":{"x":0,"y":0,"z":0},"parent":null,"model":null,"fileName":"purse2.obj"},
 
@@ -647,7 +647,7 @@
     "n":12,"alpha":1,"shaderType":1,"diffuseTexture":{"texture":{},"name":"laptop_7_speaker.png"},
     "normalTexture":{"texture":{},"name":"Leather_Worn_Normal_mqt_1024.jpg"}},
     "type":"mesh","position":[-2,2,-4],
-    "scale":[0.3,0.2,0.2],
+    "scale":[0.5,0.2,0.2],
     "rotation":[0.1218692883849144,0,0.9925462007522583,0,0,1,0,0,-0.9925462007522583,0,0.1218692883849144,0,0,0,0,1]
     ,"rotationEulers":{"x":0,"y":0,"z":0},"parent":null,"model":null,"fileName":"purse2.obj"},
 
@@ -663,8 +663,44 @@
     "scale":[0.3,0.2,0.2],
     "rotation":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
     "rotationEulers":{"x":0,"y":0,"z":0},
-    "parent":null,"model":null,"fileName":"purse2.obj"}],
+    "parent":null,"model":null,"fileName":"purse2.obj"},
     
+    {"name":"diamond",
+    "material":
+    {"diffuse":[0.4,0.9,1.0],
+    "ambient":[0.1,0.1,0.1],
+    "specular":[0.1,0.1,0.1],
+    "n":20,"alpha":1,"shaderType":1,
+    "diffuseTexture":{"texture":{},
+    "name":"craneIconTealInverse.png"},
+    "normalTexture":{"texture":{},"name":"defaultNormal.jpg"}},
+    "type":"mesh","position":[-0.75,1.1,1.2],
+    "scale":[0.5,0.5,0.5],"rotation":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+    "rotationEulers":{"x":0,"y":0,"z":0},"parent":null,"model":null,"fileName":"diamond.obj"},
+
+    {"name":"caseGlass",
+    "material":{"diffuse":[1,1,1],
+    "ambient":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
+    "specular":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
+    "n":20,"alpha":0.2,"shaderType":0,
+    "diffuseTexture":{"texture":{},"name":"craneIconTealInverse.png"},
+    "normalTexture":{"texture":{},"name":"defaultNormal.jpg"}},
+    "type":"cube","position":[-1,1.06,1],
+    "scale":[0.7,0.7,0.7],
+    "rotation":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+    "rotationEulers":{"x":0,"y":0,"z":0},"parent":null,"model":null},
+
+    {"name":"caseBottom",
+    "material":{"diffuse":[0,0,0],
+    "ambient":[0.1,0.1,0.1],
+    "specular":[0.4,0.5,0.7],
+    "n":6,"alpha":1,"shaderType":0,"diffuseTexture":{"texture":{},
+    "name":"craneIconTealInverse.png"},"normalTexture":{"texture":{},
+    "name":"defaultNormal.jpg"}},"type":"cube","position":[-1,0.5,1],
+    "scale":[0.7,1.5,0.7],
+    "rotation":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+    "rotationEulers":{"x":0,"y":0,"z":0},"parent":null,"model":null}],
+
 
     "pointLights":
     [{"name":"test-light-0",
@@ -675,11 +711,11 @@
     "nearPlane":0.1,"farPlane":1000,"shadow":false}],
 
     "skyBoxOn":false,"skyBoxPath":"defaultSkybox",
-    "sceneSettings":{"backgroundColor":[0,0,0]},
+    "sceneSettings":{"backgroundColor":[0.1,0.1,0.2]},
 
 
     
- "camera":{"name":"Camera","position":[-4 ,7 ,3],
+ "camera":{"name":"Camera","position":[-4 ,6 ,3],
  "front":[0,-1,-0.2],
  "up":[0,1,0],"yaw":90,"pitch":0,"roll":0,
  "viewMatrix":

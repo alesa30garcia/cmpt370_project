@@ -304,16 +304,16 @@ OBJLoader.prototype = {
             },
 
             addUV: function (a, b, c) {
-
                 var src = this.uvs;
                 var dst = this.object.geometry.uvs;
-
+            
                 dst.push(src[a + 0]);
                 dst.push(src[a + 1]);
                 dst.push(src[b + 0]);
                 dst.push(src[b + 1]);
                 dst.push(src[c + 0]);
                 dst.push(src[c + 1]);
+            
 
             },
 
@@ -321,9 +321,10 @@ OBJLoader.prototype = {
 
                 var src = this.uvs;
                 var dst = this.object.geometry.uvs;
-
+            
                 dst.push(src[a + 0]);
                 dst.push(src[a + 1]);
+            
 
             },
 
