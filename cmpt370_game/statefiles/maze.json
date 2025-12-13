@@ -570,13 +570,13 @@
     
     {"name":"trophy",
     "material":
-    {"diffuse":[1,0.729411780834198,0.1411764770746231],
+    {"diffuse":[1,0.7,0.14],
     "ambient":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
     "specular":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
     "n":12,"alpha":1,"shaderType":1,
     "diffuseTexture":{"texture":{},"name":"craneIconTealInverse.png"},
     "normalTexture":{"texture":{},"name":"defaultNormal.jpg"}},
-    "type":"mesh","position":[-2,-3,4.5],
+    "type":"mesh","position":[-2,-31,4.5],
     "scale":[0.007,0.007,0.007],
     "rotation":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
     "rotationEulers":{"x":0,"y":0,"z":0},
@@ -585,7 +585,7 @@
 
     {"name":"trophy-copy",
     "material":
-    {"diffuse":[1,0.729411780834198,0.1411764770746231],
+    {"diffuse":[1,0.7,0.14],
     "ambient":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
     "specular":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
     "n":12,"alpha":1,"shaderType":1,
@@ -598,13 +598,13 @@
 
     {"name":"trophy-copy-copy",
     "material":
-    {"diffuse":[1,0.729411780834198,0.1411764770746231],
+    {"diffuse":[1,0.7,0.14],
     "ambient":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
     "specular":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
     "n":12,"alpha":1,"shaderType":1,
     "diffuseTexture":{"texture":{},"name":"craneIconTealInverse.png"},
     "normalTexture":{"texture":{},"name":"defaultNormal.jpg"}},
-    "type":"mesh","position":[4,-3,0],
+    "type":"mesh","position":[4,-31,0],
     "scale":[0.007,0.007,0.007],
     "rotation":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
     "rotationEulers":{"x":0,"y":0,"z":0},
@@ -613,9 +613,9 @@
     
     {"name":"purse",
     "material":
-    {"diffuse":[0.40392157435417175,0.2705882489681244,0.23529411852359772],
-    "ambient":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
-    "specular":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
+    {"diffuse":[0.4,0.27,0.23],
+    "ambient":[0.1,0.1,0.1],
+    "specular":[0.1,0.1,0.1],
     "n":12,"alpha":1,"shaderType":1,
     "diffuseTexture":{"texture":{},"name":"laptop_7_speaker.png"},
     "normalTexture":{"texture":{},"name":"Leather_Worn_Normal_mqt_1024.jpg"}},
@@ -628,9 +628,9 @@
 
     {"name":"purse-copy",
     "material":
-    {"diffuse":[0.4627451002597809,0.019607843831181526,0.019607843831181526],
-    "ambient":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
-    "specular":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
+    {"diffuse":[0.46,0.020,0.020],
+    "ambient":[0.1,0.1,0.1],
+    "specular":[0.1,0.1,0.1],
     "n":12,"alpha":1,"shaderType":1,
     "diffuseTexture":{"texture":{},"name":"tacsesz.png"},
     "normalTexture":{"texture":{},"name":"tacsesz.png"}},
@@ -641,7 +641,7 @@
 
     {"name":"purse-copy-copy",
     "material":
-    {"diffuse":[0.29019609093666077,0.3607843220233917,0.25882354378700256],
+    {"diffuse":[0.29,0.36,0.26],
     "ambient":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
     "specular":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
     "n":12,"alpha":1,"shaderType":1,"diffuseTexture":{"texture":{},"name":"laptop_7_speaker.png"},
@@ -653,9 +653,9 @@
 
 
     {"name":"purse-copy-copy-copy",
-    "material":{"diffuse":[0.501960813999176,0.4000000059604645,0.5411764979362488],
-    "ambient":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
-    "specular":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
+    "material":{"diffuse":[0.5,0.4,0.54],
+    "ambient":[0.1,0.1,0.1],
+    "specular":[0.1,0.1,0.1],
     "n":12,"alpha":1,"shaderType":1,
     "diffuseTexture":{"texture":{},"name":"laptop_7_speaker.png"},
     "normalTexture":{"texture":{},"name":"Leather_Worn_Normal_mqt_1024.jpg"}},

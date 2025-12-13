@@ -34,7 +34,6 @@ async function createMesh(mesh, object, vertShader, fragShader) {
  * Main function that gets called when the DOM loads
  */
 async function main() {
-  //document.body.appendChild( stats.dom );
   const canvas = document.querySelector("#glCanvas");
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -105,12 +104,12 @@ async function main() {
         vec3 colour;
         float strength;
       };
-      
-      uniform PointLight[1] pointLights; // array of one for now because there is only one light 
+      uniform int numLights;
+      uniform PointLight[1] pointLights; // Only 1 light has been implemented
       uniform int samplerExists;
       uniform sampler2D uTexture;
 
-      uniform int numLights;
+     
 
       in vec3 oFragPosition;
       in vec2 oUV;
@@ -122,14 +121,14 @@ async function main() {
       void main() {
       vec3 totalColor = vec3(0,0,0);
 
-      // iterate through all the lights 
+      // Iterate through all the lights 
        for (int i = 0; i < numLights; i++) 
         {   
           vec3 normal = normalize(oNormal);
           vec3 lightDirection = normalize(pointLights[i].position - oFragPosition); // L vector 
           vec3 view = normalize(oCameraPosition - oFragPosition); // V vector 
 
-          //calculate blinn-phong shading for that light source
+          // Calculate blinn-phong shading for that light source
           vec3 ambient = ambientVal * pointLights[i].colour * pointLights[i].strength;
 
           float N_dot_L = max(dot(lightDirection, normal), 0.0); 
@@ -140,23 +139,23 @@ async function main() {
           H_dot_N = pow(H_dot_N, nVal);
           vec3 specular = specularVal * pointLights[i].colour * pointLights[i].strength * H_dot_N ;
 
-          // texture
+          // Texture
           if (samplerExists == 1) 
           {
               // get the color from the texture
               vec3 textureColor = texture(uTexture, oUV).rgb; 
 
-              // mix the material diffuse color with the color from the texture 
+              // Mix the material diffuse color with the color from the texture 
               totalColor = mix((diffuseVal), textureColor, 0.7);
           } 
 
-          // no texture
+          // No texture
           else 
           {
               totalColor = (diffuseLight * diffuseVal) + ambient + specular;
           }
         }
-      fragColor = vec4(totalColor, alphaVal); // change to include alpha later
+      fragColor = vec4(totalColor, alphaVal); 
   }
 `;
 
@@ -168,7 +167,7 @@ async function main() {
    * Initialize state with new values (some of these you can replace/change)
    */
   state = {
-    ...state, // this just takes what was already in state and applies it here again
+    ...state, // This just takes what was already in state and applies it here again
     gl,
     vertShaderSample,
     fragShaderSample,
@@ -212,7 +211,7 @@ async function main() {
   game = new Game(state);
   await game.onStart();
   loadingPage.remove();
-  startRendering(gl, state); // now that scene is setup, start rendering it
+  startRendering(gl, state); // Now that scene is setup, start rendering it
 }
 
 /**
@@ -238,13 +237,13 @@ function startRendering(gl, state) {
 
   // This function is called when we want to render a frame to the canvas
   function render(now) {
-    now *= 0.001; // convert to seconds
+    now *= 0.001; // Convert to seconds
     const deltaTime = now - then;
     then = now;
 
     state.deltaTime = deltaTime;
     drawScene(gl, deltaTime, state);
-    game.onUpdate(deltaTime); //constantly call our game loop
+    game.onUpdate(deltaTime); // Constantly call our game loop
 
     // Request another frame when this one is done
     requestAnimationFrame(render);
@@ -261,21 +260,21 @@ function startRendering(gl, state) {
  * @purpose Iterate through game objects and render the objects aswell as update uniforms
  */
 function drawScene(gl, deltaTime, state) {
-  // Drawing the background color that is saved in our state
+  //Drawing the background color that is saved in our state
   gl.clearColor(state.settings.backgroundColor[0], 
   state.settings.backgroundColor[1],  
   state.settings.backgroundColor[2], 1.0); 
 
-  gl.disable(gl.CULL_FACE); // Cull the backface of our objects to be more efficient
-  gl.cullFace(gl.BACK);
-  gl.clearDepth(1.0); // Clear everything
+  // Clear everything
+  gl.clearDepth(1.0); 
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   gl.depthMask(false);
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.ONE_MINUS_CONSTANT_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
- 
-  // sort objects by nearness to camera
+
+
+ // sort by nearness to camera
   let sorted = state.objects.sort((a, b) => {
     
     let aCentroidFour = vec4.fromValues(a.centroid[0], a.centroid[1], a.centroid[2], 1.0);
@@ -289,11 +288,13 @@ function drawScene(gl, deltaTime, state) {
     let bDistance =  vec3.distance(state.camera.position, 
       vec3.fromValues(bCentroidFour[0], bCentroidFour[1], bCentroidFour[2]))
 
+
   // when a is closer return negative
   // when b is closer return positive
     return  bDistance - aDistance; 
 
-  });
+ });
+ console.log(sorted);
 
   // iterate over each object and render them
   sorted.map((object) => {
@@ -310,9 +311,9 @@ function drawScene(gl, deltaTime, state) {
 
             }
             else {
-                // enable depth masking and z-buffering
-                // specify depth function
-                // render opaque objects         
+            //     // enable depth masking and z-buffering
+            //     // specify depth function
+            //     // render opaque objects         
                 gl.disable(gl.BLEND);
                 gl.depthMask(true);
                 gl.enable(gl.DEPTH_TEST);
@@ -326,7 +327,8 @@ function drawScene(gl, deltaTime, state) {
       let fovy = 90.0 * Math.PI / 180.0; // Vertical field of view in radians
       let aspect = state.canvas.clientWidth / state.canvas.clientHeight; // Aspect ratio of the canvas
       let near = 0.1; // Near clipping plane
-      let far = 1000000.0; // Far clipping plane
+      //let far = 1000000.0; // Far clipping plane
+      let far = 1000.0
 
       mat4.perspective(projectionMatrix, fovy, aspect, near, far);
       gl.uniformMatrix4fv(object.programInfo.uniformLocations.projection, false, projectionMatrix);
@@ -364,8 +366,9 @@ function drawScene(gl, deltaTime, state) {
           mat4.multiply(modelMatrix, parent.model.modelMatrix, modelMatrix);
         }
       }
-
-      object.model.modelMatrix = modelMatrix;
+      
+      //object.model.modelMatrix = modelMatrix;
+      object.modelMatrix = modelMatrix;
       gl.uniformMatrix4fv(object.programInfo.uniformLocations.model, false, modelMatrix);
 
       // Normal Matrix ....
@@ -388,8 +391,6 @@ function drawScene(gl, deltaTime, state) {
           gl.uniform3fv(gl.getUniformLocation(object.programInfo.program, 'pointLights[' + i + '].position'), state.pointLights[i].position);
           gl.uniform3fv(gl.getUniformLocation(object.programInfo.program, 'pointLights[' + i + '].colour'), state.pointLights[i].colour);
           gl.uniform1f(gl.getUniformLocation(object.programInfo.program, 'pointLights[' + i + '].strength'), state.pointLights[i].strength);
-          //gl.uniform1f(gl.getUniformLocation(object.programInfo.program, 'pointLights[' + i + '].linear'), state.pointLights[i].linear);
-          //gl.uniform1f(gl.getUniformLocation(object.programInfo.program, 'pointLights[' + i + '].quadratic'), state.pointLights[i].quadratic);
         }
       }
 
@@ -434,7 +435,6 @@ function drawScene(gl, deltaTime, state) {
         //if its a mesh then we don't use an index buffer and use drawArrays instead of drawElements
         if (object.type === "mesh" || object.type === "meshCustom") {
           gl.drawArrays(gl.TRIANGLES, offset, object.buffers.numVertices / 3);
-  
         } else {
           gl.drawElements(gl.TRIANGLES, object.buffers.numVertices, gl.UNSIGNED_SHORT, offset);
        
@@ -443,3 +443,4 @@ function drawScene(gl, deltaTime, state) {
       }
   });
 }
+
