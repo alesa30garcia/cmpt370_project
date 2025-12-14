@@ -407,7 +407,7 @@ class Game {
  
       else if (object.name.includes("dog"))
         {
-          this.createSphereCollider(object, 1);
+          this.createSphereCollider(object, 1.5);
 
           // A float between 0 and 1 will be added to the dog's base speed of 0.7
           var speed = Math.random(); 
@@ -424,13 +424,13 @@ class Game {
         
         }
     else if (object.name.includes("trophy"))
-      {this.createSphereCollider(object, 2);}
+      {this.createSphereCollider(object, 30);}
 
     else if (object.name.includes("purse"))
       {this.createSphereCollider(object, 1);}
 
     else if (object.name.includes("diamond"))
-      {this.createSphereCollider(object, 0.6);}
+      {this.createSphereCollider(object, 0.9);}
 
   });
 
@@ -460,8 +460,8 @@ class Game {
     this.robberTestCollider.modelMatrix = mat4.clone(this.robber.modelMatrix);
     this.robberTestCollider.centroid = vec3.clone(this.robber.centroid);
 
-    this.createSphereCollider(this.robber, 2);
-    this.createSphereCollider(this.robberTestCollider, 1);
+    this.createSphereCollider(this.robber, 1.2);
+    this.createSphereCollider(this.robberTestCollider, 1.2);
  
     this.updateSphereCentre(this.robber);
     this.updateSphereCentre(this.robberTestCollider);

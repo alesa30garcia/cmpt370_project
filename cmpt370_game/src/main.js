@@ -68,6 +68,7 @@ async function main() {
     out vec3 oNormal;
     out vec3 oFragPosition;
     out vec3 oCameraPosition;
+    out vec3 oTangent;
 
     void main() {
         // World-space position
@@ -78,6 +79,10 @@ async function main() {
         // Properly transformed normal (uses the normalMatrix your JS uploads)
         oNormal = normalize((normalMatrix * vec4(aNormal, 0.0)).xyz);
 
+        // The only object using a bump map is the floor plane which lays on the xz axis
+        oTangent = normalize(vec3(uModelMatrix * vec4(1.0, 0.0, 0.0, 0.0)).xyz); 
+
+        
         oUV = aUV;
         oCameraPosition = uCameraPosition;
 
@@ -107,24 +112,46 @@ async function main() {
       uniform int numLights;
       uniform PointLight[1] pointLights; // Only 1 light has been implemented
       uniform int samplerExists;
+      uniform int uTextureNormExists;
+      
       uniform sampler2D uTexture;
-
-     
+      uniform sampler2D uTextureNorm;
 
       in vec3 oFragPosition;
       in vec2 oUV;
       in vec3 oNormal;
       in vec3 oCameraPosition;
+      in vec3 oTangent;
 
       out vec4 fragColor;
 
       void main() {
-      vec3 totalColor = vec3(0,0,0);
+        vec3 totalColor = vec3(0,0,0);
 
-      // Iterate through all the lights 
-       for (int i = 0; i < numLights; i++) 
-        {   
-          vec3 normal = normalize(oNormal);
+        // Iterate through all the lights 
+        for (int i = 0; i < numLights; i++) 
+          {   
+         vec3 normal = vec3(0,0,0);
+
+          // Bump Mapping
+          if (uTextureNormExists == 1)
+            {
+            vec3 normVector = texture(uTextureNorm, oUV).xyz;
+            normVector = 2.0 * normVector - 1.0;
+            vec3 biTangent = cross(oNormal, oTangent); 
+
+            // make the TBN matrix
+            mat3 TBN = mat3(oTangent, biTangent, oNormal); 
+          
+            // Apply the TBN matrix to the normal vector and normalize
+            normVector = normalize(TBN * normVector);
+            normal = normVector;
+            }
+              
+          else 
+            {normal = normalize(oNormal);}
+
+  
           vec3 lightDirection = normalize(pointLights[i].position - oFragPosition); // L vector 
           vec3 view = normalize(oCameraPosition - oFragPosition); // V vector 
 
@@ -139,28 +166,24 @@ async function main() {
           H_dot_N = pow(H_dot_N, nVal);
           vec3 specular = specularVal * pointLights[i].colour * pointLights[i].strength * H_dot_N ;
 
-          // Texture
+          // // Texture
           if (samplerExists == 1) 
           {
               // get the color from the texture
               vec3 textureColor = texture(uTexture, oUV).rgb; 
 
               // Mix the material diffuse color with the color from the texture 
-              totalColor = mix((diffuseVal), textureColor, 0.7);
+              vec3 diff = mix((diffuseVal), textureColor, 0.7);
+              totalColor += (ambient + diff + specular);
           } 
-
+              
           // No texture
-          else 
-          {
-              totalColor = (diffuseLight * diffuseVal) + ambient + specular;
-          }
+          else {
+              totalColor += (diffuseLight * diffuseVal) + ambient + specular;
         }
       fragColor = vec4(totalColor, alphaVal); 
-  }
+}}
 `;
-
-
-
 
 
   /**
@@ -289,31 +312,26 @@ function drawScene(gl, deltaTime, state) {
       vec3.fromValues(bCentroidFour[0], bCentroidFour[1], bCentroidFour[2]))
 
 
-  // when a is closer return negative
-  // when b is closer return positive
+  // When a is closer return negative
+  // When b is closer return positive
     return  bDistance - aDistance; 
 
  });
- console.log(sorted);
+ 
 
-  // iterate over each object and render them
+  // Iterate over each object and render them
   sorted.map((object) => {
     gl.useProgram(object.programInfo.program);
     {
-        
+            // Render translucent objects - enable blending
             if (object.material.alpha < 1.0) {
-                // enable blending and specify blending function 
-                // render translucent objects
                 gl.depthMask(false);
                 gl.enable(gl.BLEND);
                 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-            
-
             }
+            
+            // Render opaque objects - enable depth masking and z-buffering
             else {
-            //     // enable depth masking and z-buffering
-            //     // specify depth function
-            //     // render opaque objects         
                 gl.disable(gl.BLEND);
                 gl.depthMask(true);
                 gl.enable(gl.DEPTH_TEST);
@@ -327,8 +345,7 @@ function drawScene(gl, deltaTime, state) {
       let fovy = 90.0 * Math.PI / 180.0; // Vertical field of view in radians
       let aspect = state.canvas.clientWidth / state.canvas.clientHeight; // Aspect ratio of the canvas
       let near = 0.1; // Near clipping plane
-      //let far = 1000000.0; // Far clipping plane
-      let far = 1000.0
+      let far = 1000.0 // Far clipping plane
 
       mat4.perspective(projectionMatrix, fovy, aspect, near, far);
       gl.uniformMatrix4fv(object.programInfo.uniformLocations.projection, false, projectionMatrix);
@@ -400,29 +417,33 @@ function drawScene(gl, deltaTime, state) {
         gl.bindVertexArray(object.buffers.vao);
 
         const usesTexture =
-          object.material.shaderType === 2 
+          (object.material.shaderType === 2 || object.material.shaderType === 23);
+
+        const usesBumpMap = 
+           (object.material.shaderType === 3 || object.material.shaderType === 23);
 
         if (usesTexture) {
-         
           state.samplerExists = 1;
           gl.activeTexture(gl.TEXTURE0);
           gl.uniform1i(object.programInfo.uniformLocations.samplerExists, state.samplerExists);
           gl.uniform1i(object.programInfo.uniformLocations.sampler, 0);
           gl.bindTexture(gl.TEXTURE_2D, object.model.texture);
+
         } else {
           gl.activeTexture(gl.TEXTURE0);
           state.samplerExists = 0;
           gl.uniform1i(object.programInfo.uniformLocations.samplerExists, state.samplerExists);
       }
 
-        //check for normal texture and apply it
-        if (object.material.textureNorm === 3) {
+        // Check for normal texture and apply it
+        if (usesBumpMap) {
+          
           state.samplerNormExists = 1;
           gl.activeTexture(gl.TEXTURE1);
           gl.uniform1i(object.programInfo.uniformLocations.normalSamplerExists, state.samplerNormExists);
           gl.uniform1i(object.programInfo.uniformLocations.normalSampler, 1);
           gl.bindTexture(gl.TEXTURE_2D, object.model.textureNorm);
-
+  
         } else {
           gl.activeTexture(gl.TEXTURE1);
           state.samplerNormExists = 0;
@@ -435,10 +456,10 @@ function drawScene(gl, deltaTime, state) {
         //if its a mesh then we don't use an index buffer and use drawArrays instead of drawElements
         if (object.type === "mesh" || object.type === "meshCustom") {
           gl.drawArrays(gl.TRIANGLES, offset, object.buffers.numVertices / 3);
+
+         
         } else {
           gl.drawElements(gl.TRIANGLES, object.buffers.numVertices, gl.UNSIGNED_SHORT, offset);
-       
-       
         }}
       }
   });
