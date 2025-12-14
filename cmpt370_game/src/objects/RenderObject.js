@@ -70,7 +70,7 @@ class RenderObject {
     let textureCoords = new Float32Array(this.model.uvs);
     var vertexArrayObject = this.gl.createVertexArray();
     this.gl.bindVertexArray(vertexArrayObject);
-    //console.log("vertices ", positions.length,"normals ", normals.length, "uvs", textureCoords.length);
+
     this.buffers = {
       vao: vertexArrayObject,
       attributes: {
