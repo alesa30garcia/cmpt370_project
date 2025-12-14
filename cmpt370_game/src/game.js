@@ -106,9 +106,9 @@ class Game {
     vec3.add(centre, object.model.position, offset);
     object.collider.centre = centre;
   }
-    
-    else
-    {
+
+
+    else {
     vec3.add(centre, object.model.position, object.centroid);
     object.collider.centre = centre;
     }
@@ -324,11 +324,16 @@ class Game {
     // Use a test collider to see if the movement would cause a collision between the dog and the wall
     let testPos = vec3.clone(dog.model.position);
     testPos[idx] += step;
+    
+    // Offset movement when the dog turns around to prevent 
+    // its head from going through the wall in that direction
+    if (p.direction == -1)
+      {testPos[idx] -= 0.8;}
 
     let testDog = {
       name: "testDog",
       model: { position: testPos, scale: dog.model.scale },
-      centroid: dog.centroid
+      centroid: dog.centroid,
     };
 
     this.createSphereCollider(testDog, 1);
@@ -336,7 +341,7 @@ class Game {
 
 
     let collision = this.boxSphereCollision(testDog);
-
+  
     // Dog will hit a wall if it moves in the same direction, turn around 
     if (collision) {
       this.rotateObject(dog, (dog.patrol.rotation + Math.PI) % (2 * Math.PI));
@@ -636,4 +641,4 @@ class Game {
 
 function restartGame(){
   location.reload();
-  }
+}
