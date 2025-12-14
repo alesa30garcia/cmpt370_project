@@ -1,12 +1,12 @@
 {"objects":[
     {"name":"floor",
     "material":{"diffuse":[0.2,0.1,0.1],
-    "ambient":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
-    "specular":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
-    "n":12,"alpha":1,"shaderType":2,
+    "ambient":[0.0,0.0,0.0],
+    "specular":[0.1,0.1,0.1],
+    "n":12,"alpha":1,"shaderType":23,
     "diffuseTexture":{"texture":{},"name":"Substance_Graph_BaseColor.jpg"},
     "normalTexture":{"texture":{},"name":"Substance_Graph_Normal.jpg"}},
-    "type":"cube","position":[0,0,0],"scale":[20,1,20],
+    "type":"plane","position":[0,0,0],"scale":[20,1,20],
     "rotation":[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
     "rotationEulers":{"x":0,"y":0,"z":0},"parent":null,"model":null},
 
@@ -172,9 +172,9 @@
                 0.03
             ],
             "specular": [
-                1.0,
-                1.0,
-                1.0
+                0.5,
+                0.5,
+                0.5
             ],
             "n": 32,
             "alpha": 1,
@@ -236,16 +236,17 @@
                 0.4
             ],
             "ambient": [
-                0.18,
-                0.14,
-                0.09
+                0.12,
+                0.07,
+                0.03
             ],
             "specular": [
-                0.6,
-                0.5,
-                0.4
+                0.4,
+                0.3,
+                0.2
             ],
-            "n": 20,
+            
+            "n": 30,
             "alpha": 1,
             "shaderType": 2,
             "diffuseTexture": {
@@ -303,17 +304,18 @@
                 0.65,
                 0.4
             ],
-            "ambient": [
-                0.18,
-                0.14,
-                0.09
+           "ambient": [
+                0.12,
+                0.07,
+                0.03
             ],
             "specular": [
-                0.6,
-                0.5,
-                0.4
+                0.4,
+                0.3,
+                0.2
             ],
-            "n": 20,
+           
+            "n": 30,
             "alpha": 1,
             "shaderType": 2,
             "diffuseTexture": {
@@ -371,7 +373,7 @@
                 0.32,
                 0.14
             ],
-            "ambient": [
+          "ambient": [
                 0.12,
                 0.07,
                 0.03
@@ -381,7 +383,7 @@
                 0.3,
                 0.2
             ],
-            "n": 20,
+            "n": 30,
             "alpha": 1,
             "shaderType": 2,
             "diffuseTexture": {
@@ -507,17 +509,17 @@
                 0.65,
                 0.4
             ],
-            "ambient": [
-                0.18,
-                0.14,
-                0.09
+           "ambient": [
+                0.12,
+                0.07,
+                0.03
             ],
             "specular": [
-                0.6,
-                0.5,
-                0.4
+                0.4,
+                0.3,
+                0.2
             ],
-            "n": 20,
+            "n": 30,
             "alpha": 1,
             "shaderType": 2,
             "diffuseTexture": {
@@ -615,7 +617,7 @@
     "material":
     {"diffuse":[0.4,0.27,0.23],
     "ambient":[0.1,0.1,0.1],
-    "specular":[0.1,0.1,0.1],
+    "specular":[1,1,1],
     "n":12,"alpha":1,"shaderType":1,
     "diffuseTexture":{"texture":{},"name":"laptop_7_speaker.png"},
     "normalTexture":{"texture":{},"name":"Leather_Worn_Normal_mqt_1024.jpg"}},
@@ -630,7 +632,7 @@
     "material":
     {"diffuse":[0.46,0.020,0.020],
     "ambient":[0.1,0.1,0.1],
-    "specular":[0.1,0.1,0.1],
+    "specular":[1,1,1],
     "n":12,"alpha":1,"shaderType":1,
     "diffuseTexture":{"texture":{},"name":"tacsesz.png"},
     "normalTexture":{"texture":{},"name":"tacsesz.png"}},
@@ -643,7 +645,7 @@
     "material":
     {"diffuse":[0.29,0.36,0.26],
     "ambient":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
-    "specular":[0.10000000149011612,0.10000000149011612,0.10000000149011612],
+    "specular":[1,1,1],
     "n":12,"alpha":1,"shaderType":1,"diffuseTexture":{"texture":{},"name":"laptop_7_speaker.png"},
     "normalTexture":{"texture":{},"name":"Leather_Worn_Normal_mqt_1024.jpg"}},
     "type":"mesh","position":[-2,2,-4],
@@ -655,7 +657,7 @@
     {"name":"purse-copy-copy-copy",
     "material":{"diffuse":[0.5,0.4,0.54],
     "ambient":[0.1,0.1,0.1],
-    "specular":[0.1,0.1,0.1],
+    "specular":[1,1,1],
     "n":12,"alpha":1,"shaderType":1,
     "diffuseTexture":{"texture":{},"name":"laptop_7_speaker.png"},
     "normalTexture":{"texture":{},"name":"Leather_Worn_Normal_mqt_1024.jpg"}},

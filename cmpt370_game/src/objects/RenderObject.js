@@ -70,7 +70,7 @@ class RenderObject {
     let textureCoords = new Float32Array(this.model.uvs);
     var vertexArrayObject = this.gl.createVertexArray();
     this.gl.bindVertexArray(vertexArrayObject);
-    console.log("vertices ", positions.length,"normals ", normals.length, "uvs", textureCoords.length);
+    //console.log("vertices ", positions.length,"normals ", normals.length, "uvs", textureCoords.length);
     this.buffers = {
       vao: vertexArrayObject,
       attributes: {
@@ -113,7 +113,10 @@ class RenderObject {
         // lightColours: this.gl.getUniformLocation(shaderProgram, 'uLightColours'),
         // lightStrengths: this.gl.getUniformLocation(shaderProgram, 'uLightStrengths'),
         sampler: this.gl.getUniformLocation(shaderProgram, 'uTexture'),
-        samplerExists: this.gl.getUniformLocation(shaderProgram, "samplerExists")
+        samplerExists: this.gl.getUniformLocation(shaderProgram, "samplerExists"),
+        normalSamplerExists: this.gl.getUniformLocation(shaderProgram, 'uTextureNormExists'),
+        normalSampler: this.gl.getUniformLocation(shaderProgram, 'uTextureNorm')
+        
       },
     };
    
