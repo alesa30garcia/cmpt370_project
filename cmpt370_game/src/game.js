@@ -395,8 +395,7 @@ class Game {
   // ---------- STARTUP ----------
   async onStart() {
     this.startTime = new Date();
-    console.log("On start");
-    console.log("this state", this.state);
+    document.addEventListener("keydown",() => this.playSound("backgroundMusic"));
 
     
 
